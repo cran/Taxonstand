@@ -27,7 +27,7 @@ Logical. If 'TRUE' (default) then infraspecific epithets are used to validate th
 }
 }
 \details{
-The procedure searches for a species name in The Plant List (TPL) and provides its taxonomic status. If the status is either 'Accepted' or 'Unresolved' (i.e. names for which the contributing data sources did not contain sufficient evidence to decide whether they were 'Accepted' or 'Synonyms'), the function returns the species name unchanged. In those cases where the species name provided as input is recognised as a "Synonym", it is replaced with the current accepted name. Orthographic errors can be corrected only in specific epithets. By increasing arguments 'diffchar' and 'max.distance', larger differences can be detected in typos, but this also increases false positives (i.e. replacement of some names for others that do not really match), so some caution is recommended here. If 'infra=FALSE', then infraspecific epithets are neither considered for species name validation in TPL, nor returned in the output.
+The procedure searches for a species name in The Plant List (TPL) and provides its taxonomic status. If the status is either 'Accepted' or 'Unresolved' (i.e. names for which the contributing data sources did not contain sufficient evidence to decide whether they were 'Accepted' or 'Synonyms'), the function returns the species name unchanged. In those cases where the species name provided as input is recognised as a "Synonym", it is replaced with the current accepted name. Some data sets which contributed to The Plant List record not only how plant names should be used but also where in the published literature a given name may previously have been used inappropriately (to refer erroneously to another species). In those cases, the function returns the accepted name of the species to which this name has been previously and erroneously applied. Orthographic errors can be corrected only in specific epithets. By increasing arguments 'diffchar' and 'max.distance', larger differences can be detected in typos, but this also increases false positives (i.e. replacement of some names for others that do not really match), so some caution is recommended here. If 'infra=FALSE', then infraspecific epithets are neither considered for species name validation in TPL, nor returned in the output.
 }
 
 \value{
@@ -37,7 +37,7 @@ The function return an object of class \code{data.frame} with the following comp
 \item{$Species }{Original specific epithet of species provided as input for taxonomic standardization.}
 \item{$Infraspecific }{Original intraspecific epithet of species provided as input for taxonomic standardization. If 'infra=FALSE', this is not shown. }
 \item{$Plant.Name.Index }{Logical. If 'TRUE' the name is in TPL.}
-\item{$Taxonomic.status}{Taxonomic status as in TPL, either 'Accepted', 'Synonym' or 'Unresolved'}
+\item{$Taxonomic.status}{Taxonomic status as in TPL, either 'Accepted', 'Synonym', 'Unresolved', or 'Misapplied'}
 \item{$Family }{Family name, extracted from TPL for the valid form of the name.}
 \item{$New.Genus }{Genus, extracted from TPL for the valid form of the name.}
 \item{$New.Species }{Specific epithet, extracted from TPL for the valid form of the name.}
@@ -47,9 +47,10 @@ The function return an object of class \code{data.frame} with the following comp
 \item{$WFormat }{Logical. If 'TRUE', fields in TPL had the wrong format for information to be automatically extracted as they were not properly tabulated or, alternatively, there was not a unique solutions (see 'note').}
 }
 \references{
-Cayuela, L., Granzow-de la Cerda, I., Albuquerque, F.S. and Golicher, J.D. 2012. Taxonstand: An R package for species names standardisation in vegetation databases. \emph{Methods in Ecology and Evolution}, under review.
+Cayuela, L., Granzow-de la Cerda, I., Albuquerque, F.S. and Golicher, J.D. 2012. Taxonstand: An R package for species names standardisation in vegetation databases. \emph{Methods in Ecology and Evolution}, 3(6): 1078-1083.
 
-Kalwij, J.M. 2012. Review of 'The Plant List, a working list of all plant species'. \emph{Journal of Vegetation Science}, in press.
+Kalwij, J.M. 2012. Review of 'The Plant List, a working list of all plant species'. \emph{Journal of Vegetation Science}, 23(5): 998-1002.
+
 }
 \author{
 Luis Cayuela
@@ -71,15 +72,18 @@ sp2
 # A synonym
 sp3 <- TPLck("Pottia caespitosa")
 sp3
-# A spelling error in specific epithet
-sp4 <- TPLck("Pohlia longicolla", corr=TRUE)
+# A misapplied name
+sp4 <- TPLck("Colutea istria")
 sp4
-# A spelling error that is not corrected ('max.distance' defaults to 1)
-sp5 <- TPLck("Microbryum curvicollum", corr=TRUE)
+# A spelling error in specific epithet
+sp5 <- TPLck("Pohlia longicolla", corr=TRUE)
 sp5
-# If increasing 'max.distance', the spelling error is accounted for
-sp6 <- TPLck("Microbryum curvicollum", corr=TRUE, max.distance=3)
+# A spelling error that is not corrected ('max.distance' defaults to 1)
+sp6 <- TPLck("Microbryum curvicollum", corr=TRUE)
 sp6
+# If increasing 'max.distance', the spelling error is accounted for
+sp7 <- TPLck("Microbryum curvicollum", corr=TRUE, max.distance=3)
+sp7
 }
 }
 \keyword{ vegetation analysis }

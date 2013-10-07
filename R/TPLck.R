@@ -99,8 +99,16 @@ function(sp, corr=FALSE, diffchar=2, max.distance=1, infra=TRUE) {
 					} else
 					# Loop 2.2.2.3.B
 					if (infra==FALSE || length(grep(infrasp, table.sp$Infraspecific.epithet))==0 || abs(ngrep-(nchar(infrasp)))>0) {
-					table.sp <- table.sp[table.sp$Infraspecific.epithet=="" || is.na(table.sp$Infraspecific.epithet),]
-					table.sp$Taxonomic.status.in.TPL <- as.factor(as.character(table.sp$Taxonomic.status.in.TPL))
+						# Loop 2.2.2.3.B.1
+						if((table.sp$Infraspecific.epithet=="" || is.na(table.sp$Infraspecific.epithet))==FALSE && length(grep(Species, table.sp$Infraspecific.epithet))>0) {
+						table.sp <- table.sp[table.sp$Infraspecific.epithet==Species, ]		
+						table.sp$Taxonomic.status.in.TPL <- as.factor(as.character(table.sp$Taxonomic.status.in.TPL)) 
+						} else
+						# Loop 2.2.2.3.B.2
+						if((table.sp$Infraspecific.epithet=="" || is.na(table.sp$Infraspecific.epithet))==FALSE && length(grep(Species, table.sp$Infraspecific.epithet))==0) {
+						table.sp <- table.sp[table.sp$Infraspecific.epithet=="" || is.na(table.sp$Infraspecific.epithet),]
+						table.sp$Taxonomic.status.in.TPL <- as.factor(as.character(table.sp$Taxonomic.status.in.TPL))
+						}
 					}
 					k <- dim(table.sp)[2]
 					z <- dim(table.sp)[1]
@@ -136,6 +144,7 @@ function(sp, corr=FALSE, diffchar=2, max.distance=1, infra=TRUE) {
 					} else
 					# Loop 2.2.2.3.3 (Search for synonyms)
 					if (sum(levels(table.sp$Taxonomic.status.in.TPL)=="Accepted")==0 && sum(levels(table.sp$Taxonomic.status.in.TPL)=="Synonym")>0) {
+					table.sp <- table.sp[table.sp$Taxonomic.status.in.TPL=="Synonym", ]
 					table.sp.id <- as.character(table.sp$ID[[1]])
 					at <- readLines(paste("http://www.theplantlist.org/tpl/record/", table.sp.id, sep=""))
 					az <- "<p>This name is a <a href=\"/about/#synonym\">synonym</a> of"
@@ -200,9 +209,14 @@ function(sp, corr=FALSE, diffchar=2, max.distance=1, infra=TRUE) {
 				WFormat <- FALSE
 				} else
 				# Loop 2.2.3.2
-				if (table.sp$Taxonomic.status.in.TPL=="Synonym") {
+				if (table.sp$Taxonomic.status.in.TPL=="Synonym"||table.sp$Taxonomic.status.in.TPL=="Misapplied") {
 				at <- readLines(paste("http://www.theplantlist.org/tpl/search?q=", genus,"+", species, sep=""))
-				az <- "<p>This name is a <a href=\"/about/#synonym\">synonym</a> of"
+				if (table.sp$Taxonomic.status.in.TPL=="Synonym") {
+					az <- "<p>This name is a <a href=\"/about/#synonym\">synonym</a> of"
+				} else 
+				if (table.sp$Taxonomic.status.in.TPL=="Misapplied") {
+					az <- "<p>In the past this name has been <a href=\"/about/#misapplied\">erroneously used</a> to refer to"
+				}
 				n <- pmatch(az, at)
 				nsen <- at[n]
 				nsen <- unlist(strsplit(unlist(strsplit(nsen, split=">")), "<"))
@@ -214,9 +228,14 @@ function(sp, corr=FALSE, diffchar=2, max.distance=1, infra=TRUE) {
 					if(kup == 0) {
 					infrasp <- ""
 					}
+				if (table.sp$Taxonomic.status.in.TPL=="Synonym") {
+					Taxonomic.status <- "Synonym"
+				} else 
+				if (table.sp$Taxonomic.status.in.TPL=="Misapplied") {
+					Taxonomic.status <- "Misapplied"
+				}
 				try(table.sp <- read.table(searchstring, header=TRUE, sep=",", fill=TRUE),silent=TRUE)
 				Plant.Name.Index <- TRUE
-				Taxonomic.status <- "Synonym"
 				Family <- as.character(table.sp$Family[1])
 				New.Genus <- nsen[11]
 				New.Species <- nsen[15]

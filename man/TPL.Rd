@@ -7,7 +7,8 @@ Connection to The Plant List (TPL) website to check for the validity of a list o
 Connects to TPL and validates the name of a vector of plant species names, replacing synonyms to accepted names and removing orthographical errors in plant names
 }
 \usage{
-TPL(splist, genus = NULL, species = NULL, infrasp = NULL, infra = TRUE, abbrev = TRUE, corr = FALSE, diffchar = 2, max.distance = 1, file = "")
+TPL(splist, genus = NULL, species = NULL, infrasp = NULL, infra = TRUE, abbrev = TRUE, 
+corr = FALSE, diffchar = 2, max.distance = 1, file = "")
 }
 \arguments{
   \item{splist}{
@@ -52,7 +53,7 @@ The function return an object of class \code{data.frame} with the following comp
 \item{$Abbrev }{Standard annotation used in species epithet, including "cf.", "aff.", "s.l.", and "s.str." and their orthographic variants.}
 \item{$Infraspecific }{Original intraspecific epithet of species provided as input for taxonomic standardization. If 'infra=FALSE', this is not shown. }
 \item{$Plant.Name.Index }{Logical. If 'TRUE' the name is in TPL.}
-\item{$Taxonomic.status}{Taxonomic status as in TPL, either 'Accepted', 'Synonym' or 'Unresolved'}
+\item{$Taxonomic.status}{Taxonomic status as in TPL, either 'Accepted', 'Synonym', 'Unresolved', or 'Misapplied'}
 \item{$Family }{Family name, extracted from TPL for the valid form of the name.}
 \item{$New.Genus }{Genus, extracted from TPL for the valid form of the name.}
 \item{$New.Species }{Specific epithet, extracted from TPL for the valid form of the name.}
@@ -62,9 +63,9 @@ The function return an object of class \code{data.frame} with the following comp
 \item{$WFormat }{Logical. If 'TRUE', fields in TPL had the wrong format for information to be automatically extracted as they were not properly tabulated or, alternatively, there was not a unique solutions (see 'note').}
 }
 \references{
-Cayuela, L., Granzow-de la Cerda, I., Albuquerque, F.S. and Golicher, J.D. 2012. Taxonstand: An R package for species names standardisation in vegetation databases. \emph{Methods in Ecology and Evolution}, under review.
+Cayuela, L., Granzow-de la Cerda, I., Albuquerque, F.S. and Golicher, J.D. 2012. Taxonstand: An R package for species names standardisation in vegetation databases. \emph{Methods in Ecology and Evolution}, 3(6): 1078-1083.
 
-Kalwij, J.M. 2012. Review of 'The Plant List, a working list of all plant species'. \emph{Journal of Vegetation Science}, in press.
+Kalwij, J.M. 2012. Review of 'The Plant List, a working list of all plant species'. \emph{Journal of Vegetation Science}, 23(5): 998-1002.
 
 }
 \author{
@@ -85,18 +86,22 @@ r1 <- TPL(bryophytes$Full.name[1:20], corr=TRUE)
 str(r1)
 
 # A separate specification for genera, specific, and infraspecific epithets 
-r2 <- TPL(genus = bryophytes$Genus, species = bryophytes$Species, infrasp = bryophytes$Intraspecific, corr=TRUE)
+r2 <- TPL(genus = bryophytes$Genus, species = bryophytes$Species, 
+infrasp = bryophytes$Intraspecific, corr=TRUE)
 str(r2)
 
 ####################################
 ### An example using data from GBIF
 ####################################
 require(dismo)
-# Download data containing all records available in GBIF of all species within genus Oreopanax (GBIF table)
+# Download data containing all records available in GBIF of all species 
+# within genus Oreopanax (GBIF table)
 oreopanax <- gbif("Oreopanax", "*", geo=T)
 # But a list of species can be also downloaded from GBIF for a defined geographical area
 
-# Names downloaded from GBIF often include the authority. The column names need to be split using the spaces as the split. This will result in multiple columns. We essentially only need the first two columns.
+# Names downloaded from GBIF often include the authority. 
+# The column names need to be split using the spaces as the split. 
+# This will result in multiple columns. We essentially only need the first two columns.
 sp.list <- do.call("rbind", strsplit(oreopanax$species, split=" "))
 sp.list <- as.factor(paste(sp.list[,1], sp.list[,2]))
 
