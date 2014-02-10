@@ -8,7 +8,7 @@ Connects to TPL and validates the name of a vector of plant species names, repla
 }
 \usage{
 TPL(splist, genus = NULL, species = NULL, infrasp = NULL, infra = TRUE, abbrev = TRUE, 
-corr = FALSE, diffchar = 2, max.distance = 1, file = "")
+corr = FALSE, diffchar = 2, max.distance = 1, version = "1.1", file = "")
 }
 \arguments{
   \item{splist}{
@@ -38,6 +38,9 @@ A number indicating the maximum difference between number of characters in corre
   \item{max.distance}{
 Maximum distance allowed for a match in \code{agrep} function when performing corrections of orthographical errors in specific epithets. Not used if corr=FALSE.
 }
+  \item{version}{
+A character indicating whether to connect to the newest version of TPL (1.1) or to the older one (1.0). Defaults to "1.1".
+}
   \item{file}{
 Either a character string naming a file or a connection open for writing. "" (default) indicates output to the console.
 }
@@ -53,7 +56,8 @@ The function return an object of class \code{data.frame} with the following comp
 \item{$Abbrev }{Standard annotation used in species epithet, including "cf.", "aff.", "s.l.", and "s.str." and their orthographic variants.}
 \item{$Infraspecific }{Original intraspecific epithet of species provided as input for taxonomic standardization. If 'infra=FALSE', this is not shown. }
 \item{$Plant.Name.Index }{Logical. If 'TRUE' the name is in TPL.}
-\item{$Taxonomic.status}{Taxonomic status as in TPL, either 'Accepted', 'Synonym', 'Unresolved', or 'Misapplied'}
+\item{$Taxonomic.status}{Taxonomic status as in TPL, either 'Accepted', 'Synonym', 'Unresolved', or 'Misapplied'.}
+\item{$TPL_version}{Version of TPL used.}
 \item{$Family }{Family name, extracted from TPL for the valid form of the name.}
 \item{$New.Genus }{Genus, extracted from TPL for the valid form of the name.}
 \item{$New.Species }{Specific epithet, extracted from TPL for the valid form of the name.}
