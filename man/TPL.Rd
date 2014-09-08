@@ -76,8 +76,17 @@ Kalwij, J.M. 2012. Review of 'The Plant List, a working list of all plant specie
 Luis Cayuela
 }
 \note{
-Various limitations have been identified to date in the implementation of this function. First, homonyms (i.e. a name for a taxon that is identical in spelling to another such name, but belongs to a different taxon) cannot be identified. Second, if the input infraspecific epithet does not match any of the infraspecific epithets provided in TPL, then the first accepted name with no infraspecific epithet is selected as the best match. If all names provided by TPL have infraspecific epithets and are all synonyms (e.g. Pottia starkeana), then there is no best match and the output will match the original name.
+Various limitations have been identified to date in the implementation of this function. First, homonyms (i.e. names orthographically identical but applied to different taxa) cannot be flagged. Second, if the infraspecific epithet in the input does not match any of the infraspecific epithets provided by TPL, then the first accepted name without infraspecific epithets will be selected as the best match. If all names provided by TPL bear infraspecific epithets but are all synonyms (e.g. \emph{Pottia starkeana}), then none is considered as a best match and the output will return the original name in the input.
+
+In addition, some users have experienced problems when using Taxonstand version 1.3, particularly under Windows O.S. This problem arises from differences in the encoding system used by the server and the client, which results in the following error message:
+
+Error in file(con, "r") : cannot open the connection
+In addition: Warning message:
+In file(con, "r") : cannot open: HTTP status was '404 Not Found'
+
+The code has been fixed to avoid this issue when retrieving data from The Plant List. Nonetheless, if users keep experiencing the same problem, please report it to the maintainer."
 }
+
 \seealso{
 See also \code{\link{TPLck}}.
 }

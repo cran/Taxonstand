@@ -147,7 +147,8 @@ WFormat <- FALSE
 # Loop 2.2.2.3.3 (Search for synonyms)
 if (sum(table.sp$Taxonomic.status.in.TPL=="Accepted")==0 && sum(table.sp$Taxonomic.status.in.TPL=="Synonym")>0) {
 table.sp <- table.sp[table.sp$Taxonomic.status.in.TPL=="Synonym", ]
-table.sp.id <- table.sp$ID[[1]]
+#table.sp.id <- table.sp$ID[[1]]
+table.sp.id <- table.sp[1,1]
 at <- readLines(paste("http://www.theplantlist.org/tpl", vv, "/record/", table.sp.id, sep=""))
 if (version=="1.1") {
 az <- "<p>This name is a <a href=\"/1.1/about/#synonym\">synonym</a> of"
