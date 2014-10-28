@@ -108,6 +108,7 @@ infrasp <- gsub("  ", "", infrasp, fixed=TRUE)
 infrasp <- gsub(" ", "", infrasp, fixed=TRUE)
 }
 d <- paste(genus, species, infrasp)
+d <- gsub(" NA", "", d, fixed=TRUE)
 
 TPLck2 <- function(d) {
 TPLck(sp=d, corr=corr, diffchar=diffchar, max.distance=max.distance, infra=infra, version=version)
