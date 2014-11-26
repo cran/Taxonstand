@@ -1,5 +1,5 @@
 TPLck <-
-function(sp, corr=FALSE, diffchar=2, max.distance=1, infra=TRUE, version="1.1") {
+function(sp, corr=FALSE, diffchar=2, max.distance=1, infra=TRUE, version="1.1", encoding="UTF-8") {
 sp <- as.character(sp)
 genus <- unlist(strsplit(sp," "))[1]
 species <- unlist(strsplit(sp," "))[2]
@@ -8,10 +8,11 @@ vv <- ifelse(version == "1.0", "", version)
 
 searchstring <- paste("http://www.theplantlist.org/tpl", vv, "/search?q=",genus,"+",species, "&csv=true", sep="")
 table.sp <- NULL
-try(table.sp <- read.csv(searchstring, header=TRUE, sep=",", fill=TRUE, colClasses="character", as.is = TRUE),silent=TRUE)
+try(table.sp <- read.csv(searchstring, header=TRUE, sep=",", fill=TRUE, colClasses="character", as.is = TRUE, encoding=encoding),silent=TRUE)
 Genus <- genus
 Species <- species
 Infraspecific <- infrasp
+New.Hybrid.marker <- ""
 marker <- FALSE
 
 # Loop 1
@@ -72,7 +73,7 @@ ddf <- abs(nchar(cck) - nchar(species))
 levs <- length(unique(cck))
 if(length(is.mf) == 0 && length(cck) > 0 && ddf <= diffchar && levs == 1 && spx == 0) {
 searchstring <- paste("http://www.theplantlist.org/tpl", vv, "/search?q=",genus,"+",cck[1], "&csv=true", sep="")
-try(table.sp <- read.table(searchstring, header=TRUE, sep=",", fill=TRUE,colClasses = "character", as.is = TRUE), silent=T)
+try(table.sp <- read.table(searchstring, header=TRUE, sep=",", fill=TRUE,colClasses = "character", as.is = TRUE, encoding=encoding), silent=T)
 k <- dim(table.sp)[2]
 z <- dim(table.sp)[1]
 marker <- TRUE
@@ -133,6 +134,7 @@ Plant.Name.Index <- TRUE
 Taxonomic.status <- table.sp$Taxonomic.status.in.TPL[1]
 Family <- table.sp$Family[1]
 New.Genus <- table.sp$Genus[1]
+New.Hybrid.marker <- table.sp$Species.hybrid.marker[1]
 New.Species <- table.sp$Species[1]
 if (infra == T && length(grep(infrasp, table.sp$Infraspecific.epithet))>0) {
 New.Infraspecific <- table.sp$Infraspecific.epithet[1]
@@ -144,17 +146,40 @@ Authority <- table.sp$Authorship[1]
 Typo <- ifelse(marker==TRUE, TRUE, FALSE)
 WFormat <- FALSE
 } else
-# Loop 2.2.2.3.3 (Search for synonyms)
-if (sum(table.sp$Taxonomic.status.in.TPL=="Accepted")==0 && sum(table.sp$Taxonomic.status.in.TPL=="Synonym")>0) {
+# Loop 2.2.2.3.3 (Search for synonyms or missapplied names)
+if (sum(table.sp$Taxonomic.status.in.TPL=="Accepted")==0 && (sum(table.sp$Taxonomic.status.in.TPL=="Synonym")>0||sum(table.sp$Taxonomic.status.in.TPL=="Misapplied")>0)) {
+if(sum(table.sp$Taxonomic.status.in.TPL=="Synonym")>0) {
 table.sp <- table.sp[table.sp$Taxonomic.status.in.TPL=="Synonym", ]
-#table.sp.id <- table.sp$ID[[1]]
+} else
+if(sum(table.sp$Taxonomic.status.in.TPL=="Misapplied")>0) {
+table.sp <- table.sp[table.sp$Taxonomic.status.in.TPL=="Misapplied", ]
+}
+if(sum(table.sp$Confidence.level=="H")>0) {
+table.sp <- table.sp[table.sp$Confidence.level=="H", ]
+} else
+if(sum(table.sp$Confidence.level=="M")>0) {
+table.sp <- table.sp[table.sp$Confidence.level=="M", ]
+}
+if(nrow(table.sp)>1) {
+warning(paste(sp, "has more than one valid synonym"))
+}
 table.sp.id <- table.sp[1,1]
-at <- readLines(paste("http://www.theplantlist.org/tpl", vv, "/record/", table.sp.id, sep=""))
+at <- readLines(paste("http://www.theplantlist.org/tpl", vv, "/record/", table.sp.id, sep=""), encoding=encoding)
+if (sum(table.sp$Taxonomic.status.in.TPL=="Synonym")>0) {
 if (version=="1.1") {
 az <- "<p>This name is a <a href=\"/1.1/about/#synonym\">synonym</a> of"
 } else
 if (version=="1.0") {
 az <- "<p>This name is a <a href=\"/about/#synonym\">synonym</a> of"
+}
+} else 
+if (sum(table.sp$Taxonomic.status.in.TPL=="Misapplied")>0) {
+if (version=="1.1") {
+az <- "<p>In the past this name has been <a href=\"/1.1/about/#misapplied\">erroneously used</a> to refer to"
+} else 
+if (version=="1.0") {
+az <- "<p>In the past this name has been <a href=\"/about/#misapplied\">erroneously used</a> to refer to"
+}
 }
 n <- pmatch(az, at)
 nsen <- at[n]
@@ -171,14 +196,25 @@ if (version=="1.1") {
 infrasp <- ifelse(nsen[17]=="\u00D7", nsen[29], nsen[25])
 } else
 if (version=="1.0") {
-infrasp <- ifelse(nsen[17]=="\u00D7", nsen[27], nsen[23])
+infrasp <- ifelse(nsen[15]=="\u00D7", nsen[27], nsen[23])
 }
 } else
 if(kup == 0) {
 infrasp <- ""
 }
-try(table.sp <- read.table(searchstring, header=TRUE, sep=",", fill=TRUE,
-                                                                   colClasses="character", as.is = TRUE),silent=TRUE)
+if (sum(table.sp$Taxonomic.status.in.TPL=="Synonym")>0) {
+Taxonomic.status <- "Synonym"
+} else 
+if (sum(table.sp$Taxonomic.status.in.TPL=="Misapplied")>0) {
+Taxonomic.status <- "Misapplied"
+}
+try(table.sp <- read.table(searchstring, header=TRUE, sep=",", fill=TRUE, colClasses="character", as.is = TRUE, encoding=encoding),silent=TRUE)
+if (version=="1.1" && nsen[17]=="\u00D7") {
+table.sp <- table.sp[table.sp$Species.hybrid.marker=="\u00D7", ]
+} else
+if (version=="1.0" && nsen[15]=="\u00D7") {
+table.sp <- table.sp[table.sp$Species.hybrid.marker=="\u00D7", ]
+}
 grep1 <- grep(infrasp, table.sp$Infraspecific.epithet, value=TRUE)
 ngrep <- nchar(grep1)
 # Loop 2.2.2.3.3.A
@@ -192,9 +228,9 @@ table.sp <- table.sp[table.sp$Infraspecific.epithet=="" || is.na(table.sp$Infras
 table.sp$Taxonomic.status.in.TPL <- table.sp$Taxonomic.status.in.TPL
 }
 Plant.Name.Index <- TRUE
-Taxonomic.status <- "Synonym"
 Family <- table.sp$Family[1]
 New.Genus <- table.sp$Genus[1]
+New.Hybrid.marker <- table.sp$Species.hybrid.marker[1]
 New.Species <- table.sp$Species[1]
 New.Infraspecific <- table.sp$Infraspecific.epithet[1]
 Authority <- table.sp$Authorship[1]
@@ -207,6 +243,7 @@ Plant.Name.Index <- TRUE
 Taxonomic.status <- "Unresolved"
 Family <- table.sp$Family[1]
 New.Genus <- table.sp$Genus[1]
+New.Hybrid.marker <- table.sp$Species.hybrid.marker[1]
 New.Species <- table.sp$Species[1]
 New.Infraspecific <- table.sp$Infraspecific.epithet[1]
 Authority <- table.sp$Authorship[1]
@@ -229,7 +266,7 @@ WFormat <- FALSE
 } else
 # Loop 2.2.3.2
 if (table.sp$Taxonomic.status.in.TPL=="Synonym"||table.sp$Taxonomic.status.in.TPL=="Misapplied") {
-at <- readLines(paste("http://www.theplantlist.org/tpl", vv, "/search?q=", genus,"+", species, sep=""))
+at <- readLines(paste("http://www.theplantlist.org/tpl", vv, "/search?q=", genus,"+", species, sep=""), encoding=encoding)
 if (table.sp$Taxonomic.status.in.TPL=="Synonym") {
 if (version=="1.1") {
 az <- "<p>This name is a <a href=\"/1.1/about/#synonym\">synonym</a> of"
@@ -261,7 +298,7 @@ if (version=="1.1") {
 infrasp <- ifelse(nsen[17]=="\u00D7", nsen[29], nsen[25])
 } else
 if (version=="1.0") {
-infrasp <- ifelse(nsen[17]=="\u00D7", nsen[27], nsen[23])
+infrasp <- ifelse(nsen[15]=="\u00D7", nsen[27], nsen[23])
 }
 } else
 if(kup == 0) {
@@ -273,7 +310,15 @@ Taxonomic.status <- "Synonym"
 if (table.sp$Taxonomic.status.in.TPL=="Misapplied") {
 Taxonomic.status <- "Misapplied"
 }
-try(table.sp <- read.table(searchstring, header=TRUE, sep=",", fill=TRUE, colClasses="character"),silent=TRUE)
+try(table.sp <- read.table(searchstring, header=TRUE, sep=",", fill=TRUE, colClasses="character", encoding=encoding),silent=TRUE)
+if (version=="1.1" && nsen[17]=="\u00D7") {
+table.sp <- table.sp[table.sp$Species.hybrid.marker=="\u00D7", ]
+New.Hybrid.marker <- "\u00D7"
+} else
+if (version=="1.0" && nsen[15]=="\u00D7") {
+table.sp <- table.sp[table.sp$Species.hybrid.marker=="\u00D7", ]
+New.Hybrid.marker <- "\u00D7"
+}
 Plant.Name.Index <- TRUE
 Family <- table.sp$Family[1]
 if (version=="1.1") {
@@ -308,6 +353,7 @@ Plant.Name.Index <- TRUE
 Taxonomic.status <- table.sp$Taxonomic.status.in.TPL[1]
 Family <- table.sp$Family
 New.Genus <- table.sp$Genus
+New.Hybrid.marker <- table.sp$Species.hybrid.marker[1]
 New.Species <- table.sp$Species
 New.Infraspecific <- table.sp$Infraspecific.epithet
 Authority <- table.sp$Authorship
@@ -317,5 +363,6 @@ WFormat <- FALSE
 } # End of loop 2.2.3
 } # End of loop 2.1
 } # End of loop 2
-results <- data.frame(Genus, Species, Infraspecific, Plant.Name.Index, TPL_version=version, Taxonomic.status, Family, New.Genus, New.Species, New.Infraspecific, Authority, Typo, WFormat, stringsAsFactors = FALSE)
+results <- data.frame(Genus, Species, Infraspecific, Plant.Name.Index, TPL_version=version, Taxonomic.status, Family, New.Genus, New.Hybrid.marker, New.Species, New.Infraspecific, Authority, Typo, WFormat, stringsAsFactors = FALSE)
 }
+

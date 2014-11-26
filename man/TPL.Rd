@@ -8,7 +8,8 @@ Connects to TPL and validates the name of a vector of plant species names, repla
 }
 \usage{
 TPL(splist, genus = NULL, species = NULL, infrasp = NULL, infra = TRUE, abbrev = TRUE, 
-corr = FALSE, diffchar = 2, max.distance = 1, version = "1.1", file = "")
+corr = FALSE, diffchar = 2, max.distance = 1, version = "1.1", encoding = "UTF-8",
+file = "")
 }
 \arguments{
   \item{splist}{
@@ -41,6 +42,9 @@ Maximum distance allowed for a match in \code{agrep} function when performing co
   \item{version}{
 A character indicating whether to connect to the newest version of TPL (1.1) or to the older one (1.0). Defaults to "1.1".
 }
+  \item{encoding}{
+Encoding to be assumed for input strings.  It is used to mark character strings as known to be in Latin-1 or UTF-8 (see 'Encoding'). It is not used to re-encode the input, but allows R to handle encoded strings in their native encoding (if one of those two). Defaults to "UTF-8" but it can be changed to "unknown" or "Latin-1".
+}
   \item{file}{
 Either a character string naming a file or a connection open for writing. "" (default) indicates output to the console.
 }
@@ -60,6 +64,7 @@ The function return an object of class \code{data.frame} with the following comp
 \item{$TPL_version}{Version of TPL used.}
 \item{$Family }{Family name, extracted from TPL for the valid form of the name.}
 \item{$New.Genus }{Genus, extracted from TPL for the valid form of the name.}
+\item{$New.Hybrid.marker }{Hybrid marker, extracted from TPL for the valid form of the name.}
 \item{$New.Species }{Specific epithet, extracted from TPL for the valid form of the name.}
 \item{$New.Infraspecific }{Infraspecific epithet, extracted from TPL for the valid form of the name.}
 \item{$Authority }{A field designating the scientist(s) who first published the name, extracted from TPL for the valid form of the name.}

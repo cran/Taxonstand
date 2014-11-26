@@ -7,7 +7,8 @@ Connects to The Plant List (TPL) website and check for the validity of a plant n
 Connects to TPL and validates the name of a single plant species name, replacing synonyms for accepted names and removing orthographical errors in plant names
 }
 \usage{
-TPLck(sp, corr = FALSE, diffchar = 2, max.distance = 1, infra = TRUE, version = "1.1")
+TPLck(sp, corr = FALSE, diffchar = 2, max.distance = 1, infra = TRUE, version = "1.1", 
+encoding = "UTF-8")
 }
 \arguments{
   \item{sp}{
@@ -28,7 +29,9 @@ Logical. If 'TRUE' (default) then infraspecific epithets are used to validate th
   \item{version}{
 A character indicating whether to connect to the newest version of TPL (1.1) or to the older one (1.0). Defaults to "1.1".
 }
-
+  \item{encoding}{
+Encoding to be assumed for input strings.  It is used to mark character strings as known to be in Latin-1 or UTF-8 (see 'Encoding'). It is not used to re-encode the input, but allows R to handle encoded strings in their native encoding (if one of those two). Defaults to "UTF-8" but it can be changed to "unknown" or "Latin-1".
+}
 }
 \details{
 The procedure searches for a species name in The Plant List (TPL) and provides its taxonomic status. If the status is either 'Accepted' or 'Unresolved' (i.e. names for which the contributing data sources did not contain sufficient evidence to decide whether they were 'Accepted' or 'Synonyms'), the function returns the species name unchanged. In those cases where the species name provided as input is recognised as a "Synonym", it is replaced with the current accepted name. Some data sets which contributed to The Plant List record not only how plant names should be used but also where in the published literature a given name may previously have been used inappropriately (to refer erroneously to another species). In those cases, the function returns the accepted name of the species to which this name has been previously and erroneously applied. Orthographic errors can be corrected only in specific epithets. By increasing arguments 'diffchar' and 'max.distance', larger differences can be detected in typos, but this also increases false positives (i.e. replacement of some names for others that do not really match), so some caution is recommended here. If 'infra=FALSE', then infraspecific epithets are neither considered for species name validation in TPL, nor returned in the output.
@@ -46,6 +49,7 @@ The function return an object of class \code{data.frame} with the following comp
 \item{$TPL_version}{Version of TPL used.}
 \item{$Family }{Family name, extracted from TPL for the valid form of the name.}
 \item{$New.Genus }{Genus, extracted from TPL for the valid form of the name.}
+\item{$New.Hybrid.marker }{Hybrid marker, extracted from TPL for the valid form of the name.}
 \item{$New.Species }{Specific epithet, extracted from TPL for the valid form of the name.}
 \item{$New.Infraspecific }{Infraspecific epithet, extracted from TPL for the valid form of the name.}
 \item{$Authority }{A field designating the scientist(s) who first published the name, extracted from TPL for the valid form of the name.}
