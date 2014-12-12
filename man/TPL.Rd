@@ -8,7 +8,7 @@ Connects to TPL and validates the name of a vector of plant species names, repla
 }
 \usage{
 TPL(splist, genus = NULL, species = NULL, infrasp = NULL, infra = TRUE, abbrev = TRUE, 
-corr = FALSE, diffchar = 2, max.distance = 1, version = "1.1", encoding = "UTF-8",
+corr = TRUE, diffchar = 2, max.distance = 1, version = "1.1", encoding = "UTF-8",
 file = "")
 }
 \arguments{
@@ -31,7 +31,7 @@ Logical. If 'TRUE' (default) then infraspecific epithets are used to validate th
 Logical. If 'TRUE' (default), abbreviations (aff., cf., subsp., var.) and their variants are removed prior to taxonomic standardization.
 }
   \item{corr}{
-Logical. If 'TRUE', then removal of orthographical errors is performed on specific epithets (only) prior to taxonomic standardization.
+Logical. If 'TRUE' (default), then removal of orthographical errors is performed (only) on specific and infraspecific epithets prior to taxonomic standardization.
 }
   \item{diffchar}{
 A number indicating the maximum difference between number of characters in corrected and original species names. Not used if corr=FALSE.
@@ -59,6 +59,7 @@ The function return an object of class \code{data.frame} with the following comp
 \item{$Species }{Original specific epithet of species provided as input for taxonomic standardization.}
 \item{$Abbrev }{Standard annotation used in species epithet, including "cf.", "aff.", "s.l.", and "s.str." and their orthographic variants.}
 \item{$Infraspecific }{Original intraspecific epithet of species provided as input for taxonomic standardization. If 'infra=FALSE', this is not shown. }
+\item{$ID }{ The Plant List record 'id'.}
 \item{$Plant.Name.Index }{Logical. If 'TRUE' the name is in TPL.}
 \item{$Taxonomic.status}{Taxonomic status as in TPL, either 'Accepted', 'Synonym', 'Unresolved', or 'Misapplied'.}
 \item{$TPL_version}{Version of TPL used.}
@@ -68,6 +69,7 @@ The function return an object of class \code{data.frame} with the following comp
 \item{$New.Species }{Specific epithet, extracted from TPL for the valid form of the name.}
 \item{$New.Infraspecific }{Infraspecific epithet, extracted from TPL for the valid form of the name.}
 \item{$Authority }{A field designating the scientist(s) who first published the name, extracted from TPL for the valid form of the name.}
+\item{$New.ID }{The Plant List record 'id' for the species name, once synonyms have been replaced by accepted names. In all other cases, this field will be equivalent to 'ID'.}
 \item{$Typo }{Logical. If 'TRUE' there was a spelling error in the specific epithet that has been corrected.}
 \item{$WFormat }{Logical. If 'TRUE', fields in TPL had the wrong format for information to be automatically extracted as they were not properly tabulated or, alternatively, there was not a unique solutions (see 'note').}
 }

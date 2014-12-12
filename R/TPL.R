@@ -1,5 +1,5 @@
 TPL <-
-function(splist, genus=NULL, species=NULL, infrasp=NULL, infra=TRUE, abbrev=TRUE, corr=FALSE, diffchar=2, max.distance=1, version="1.1", encoding="UTF-8", file="") {
+function(splist, genus=NULL, species=NULL, infrasp=NULL, infra=TRUE, abbrev=TRUE, corr=TRUE, diffchar=2, max.distance=1, version="1.1", encoding="UTF-8", file="") {
 splist2 <- NULL
 try(splist2 <- splist, silent=TRUE)
 if(!is.null(splist2) && (!is.null(genus) || !is.null(species) || !is.null(infrasp))) {
@@ -8,127 +8,45 @@ stop("argument 'splist' incompatible with arguments 'genus' and 'species'")
 if(is.null(splist2) && ((is.null(genus) && !is.null(species)) || (!is.null(genus) && is.null(species)))) {
 stop("arguments 'genus' and 'species' must be provided")
 } else
-if(!is.null(splist2) && is.null(genus) && is.null(species) && is.null(infrasp)) {
-if(abbrev==TRUE) {
-abbr <- rep(NA, length(splist))
-splist0 <- splist
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("cf. ", splist[i], fixed=TRUE))>0, "cf.", abbr[i])}
-splist <- sub("cf. ", "", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("cf.", splist[i], fixed=TRUE))>0, "cf.", abbr[i])}
-splist <- sub("cf.", "", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("cf ", splist[i], fixed=TRUE))>0, "cf.", abbr[i])}
-splist <- sub("cf ", "", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("aff. ", splist[i], fixed=TRUE))>0, "aff.", abbr[i])}
-splist <- sub("aff. ", "", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("aff.", splist[i], fixed=TRUE))>0, "aff.", abbr[i])}
-splist <- sub("aff.", "", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("aff ", splist[i], fixed=TRUE))>0, "aff.", abbr[i])}
-splist <- sub("aff ", "", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("s.l. ", splist[i], fixed=TRUE))>0, "s.l.", abbr[i])}
-splist <- sub("s.l. ", "", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("s.l.", splist[i], fixed=TRUE))>0, "s.l.", abbr[i])}
-splist <- sub("s.l.", "", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("s.l ", splist[i], fixed=TRUE))>0, "s.l.", abbr[i])}
-splist <- sub("s.l ", "", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("s.str. ", splist[i], fixed=TRUE))>0, "s.str.", abbr[i])}
-splist <- sub("s.str. ", "", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("s.str.", splist[i], fixed=TRUE))>0, "s.str.", abbr[i])}
-splist <- sub("s.str.", "", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("s.str ", splist[i], fixed=TRUE))>0, "s.str.", abbr[i])}
-splist <- sub("s.str ", "", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("\u00D7", splist[i], fixed=TRUE))>0, "\u00D7", abbr[i])}
-splist <- sub(" x ", " ", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("x ", splist[i], fixed=TRUE))>0, "\u00D7", abbr[i])}
-splist <- sub(" x ", " ", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("x. ", splist[i], fixed=TRUE))>0, "\u00D7", abbr[i])}
-splist <- sub("x. ", " ", splist, fixed=TRUE)
-for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep("x.", splist[i], fixed=TRUE))>0, "\u00D7", abbr[i])}
-splist <- sub("x.", " ", splist, fixed=TRUE)
-
-ns <- sum(is.na(match(splist0,splist)))
-print(paste(ns, "substitutions of standard annotations in specific epithet"))
-splist <- sub("subsp. ", "", splist, fixed=TRUE)
-splist <- sub("subsp.", "", splist, fixed=TRUE)
-splist <- sub("subsp ", "", splist, fixed=TRUE)
-splist <- sub("var. ", "", splist, fixed=TRUE)
-splist <- sub("var.", "", splist, fixed=TRUE)
-splist <- sub("var ", "", splist, fixed=TRUE)
-ns <- sum(is.na(match(splist0,splist)))
-print(paste(ns, "substitutions of subsp. and var. in infraspecific epithet"))
-}
-splist <- gsub("      ", " ", splist, fixed=TRUE)
-splist <- gsub("     ", " ", splist, fixed=TRUE)
-splist <- gsub("    ", " ", splist, fixed=TRUE)
-splist <- gsub("   ", " ", splist, fixed=TRUE)
-splist <- gsub("  ", " ", splist, fixed=TRUE)
-f<-function(x) {unlist(strsplit(x," "))[1]}
-genus<-unlist(lapply(splist,f))
-f<-function(x) {unlist(strsplit(x," "))[2]}
-species<-unlist(lapply(splist,f))
-f<-function(x) {unlist(strsplit(x," "))[3]}
-infrasp<-unlist(lapply(splist,f))
+if(is.null(splist2) && !is.null(genus) && !is.null(species)) {
+if(infra==TRUE && !is.null(infrasp)) {
+splist <- paste(genus, species, infrasp)
 } else
-if(is.null(splist2) && (!is.null(genus) && !is.null(species))) {
-if(length(genus) != length(species)) {
-stop("'genus' and 'species' are not vectors of the same length")
+if(infra==FALSE || is.null(infrasp)) {
+splist <- paste(genus, species)
 }
-if(abbrev==TRUE) {
-species0 <- species
-abbr <- rep(NA, length(species))
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("cf. ", species[i], fixed=TRUE))>0, "cf.", abbr[i])}
-species <- sub("cf. ", "", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("cf.", species[i], fixed=TRUE))>0, "cf.", abbr[i])}
-species <- sub("cf.", "", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("cf ", species[i], fixed=TRUE))>0, "cf.", abbr[i])}
-species <- sub("cf ", "", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("aff. ", species[i], fixed=TRUE))>0, "aff.", abbr[i])}
-species <- sub("aff. ", "", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("aff.", species[i], fixed=TRUE))>0, "aff.", abbr[i])}
-species <- sub("aff.", "", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("aff ", species[i], fixed=TRUE))>0, "aff.", abbr[i])}
-species <- sub("aff ", "", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("s.l. ", species[i], fixed=TRUE))>0, "s.l.", abbr[i])}
-species <- sub("s.l. ", "", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("s.l.", species[i], fixed=TRUE))>0, "s.l.", abbr[i])}
-species <- sub("s.l.", "", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("s.l ", species[i], fixed=TRUE))>0, "s.l.", abbr[i])}
-species <- sub("s.l ", "", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("s.str. ", species[i], fixed=TRUE))>0, "s.str.", abbr[i])}
-species <- sub("s.str. ", "", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("s.str.", species[i], fixed=TRUE))>0, "s.str.", abbr[i])}
-species <- sub("s.str.", "", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("s.str ", species[i], fixed=TRUE))>0, "s.str.", abbr[i])}
-species <- sub("s.str ", "", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("\u00D7", species[i], fixed=TRUE))>0, "\u00D7", abbr[i])}
-species <- sub(" x ", " ", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("x ", species[i], fixed=TRUE))>0, "\u00D7", abbr[i])}
-species <- sub(" x ", " ", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("x. ", species[i], fixed=TRUE))>0, "\u00D7", abbr[i])}
-species <- sub("x. ", " ", species, fixed=TRUE)
-for(i in 1:length(species)) {abbr[i] <- ifelse(length(grep("x.", species[i], fixed=TRUE))>0, "\u00D7", abbr[i])}
-species <- sub("x.", " ", species, fixed=TRUE)
+}
+#if(abbrev==TRUE) {
+#abbr <- rep(NA, length(splist))
+#splist0 <- splist
 
-ns <- sum(is.na(match(species0,species)))
-print(paste(ns, "substitutions of standard annotations in specific epithet"))
-}
-genus <- gsub("  ", "", genus, fixed=TRUE)
-genus <- gsub(" ", "", genus, fixed=TRUE)
-species <- gsub("  ", "", species, fixed=TRUE)
-species <- gsub(" ", "", species, fixed=TRUE)
-infrasp <- gsub("  ", "", infrasp, fixed=TRUE)
-infrasp <- gsub(" ", "", infrasp, fixed=TRUE)
-}
-d <- paste(genus, species, infrasp)
-d <- gsub(" NA", "", d, fixed=TRUE)
+#vec0 <- c("nothossp. ", "nothossp.", " nothossp ", "nothosubsp. ", "nothosubsp.", " nothosubsp ", "cultivar. ", "cultivar.", " cultivar ", "subfo. ", " subfo ", "subf. ", "subf.", " subf ", " subproles ", "cf. ", "cf.", " cf ", "aff. ", "aff.", " aff ", "s.l. ", "s.l.", "s.l ", "s.str. ", "s.str.", "s.str ", "\u00D7", "x. ", "x.", " x ", "X. ", "X.", " X ", "X ", "f. ", "f.", " f ", "fo. ", "fo.", " fo ", " forma ", "subvar.", " subvar ", "var. ", "var.", " var ", "subsp. ", "subsp.", " subsp ", "ssp. ", "ssp.", " ssp ", " gama ", " grex ", "lus. ", "lus.", " lus ", " lusus ", "monstr. ", " monstr ", "nm. ", "nm.", " nm ", "prol. ", "prol.", " prol ", " proles ", " race ", "subvar. ", "cv. ", "cv.", " cv ")
+#for(j in 1:length(vec0)) {
+#for(i in 1:length(splist)) {abbr[i] <- ifelse(length(grep(vec0[j], splist[i], fixed=TRUE))>0, vec0[j], abbr[i])}
+#splist <- sub(vec0[j], " ", splist, fixed=TRUE)
+#}
+#abbr <- gsub(" ", "", abbr, fixed=TRUE)
+#ns <- sum(!is.na(abbr))
+#print(paste(ns, "substitutions of standard annotations in specific and infraspecific epithets"))
+#}
+
+#splist <- gsub("      ", " ", splist, fixed=TRUE)
+#splist <- gsub("     ", " ", splist, fixed=TRUE)
+#splist <- gsub("    ", " ", splist, fixed=TRUE)
+#splist <- gsub("   ", " ", splist, fixed=TRUE)
+#splist <- gsub("  ", " ", splist, fixed=TRUE)
+#splist <- gsub("_", "", splist, fixed=TRUE)
+#for(i in 1:length(splist)) {splist[i] <- ifelse(substr(splist[i], 1, 1)==" ", substr(splist[i], 2, nchar(splist[i])), splist[i])} 
+
 
 TPLck2 <- function(d) {
-TPLck(sp=d, corr=corr, diffchar=diffchar, max.distance=max.distance, infra=infra, version=version, encoding=encoding)
+TPLck(sp=d, corr=corr, diffchar=diffchar, max.distance=max.distance, infra=infra, abbrev=abbrev, version=version, encoding=encoding)
 }
-results <- do.call("rbind", lapply(d, TPLck2))
-results$Infraspecific <- ifelse(results$Infraspecific=="NA", "", as.character(results$Infraspecific))
-results <- data.frame(results[,1:2], Abbrev=as.character(abbr), results[,-c(1:2)])
+results <- do.call("rbind", lapply(splist, TPLck2))
+#results$Infraspecific <- ifelse(results$Infraspecific=="NA", "", as.character(results$Infraspecific))
+#results <- data.frame(results[,1:2], Abbrev=as.character(abbr), results[,-c(1:2)])
 if(infra==FALSE) {
-results <- results[,-c(4,10)]
+results <- results[,-c(4,13)]
 }
 if(nchar(file)>0) {
 write.csv(results, file=file, row.names=F)
