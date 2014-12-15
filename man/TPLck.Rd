@@ -7,15 +7,15 @@ Connects to The Plant List (TPL) website and check for the validity of a plant n
 Connects to TPL and validates the name of a single plant species name, replacing synonyms for accepted names and removing orthographical errors in plant names
 }
 \usage{
-TPLck(sp, corr = FALSE, diffchar = 2, max.distance = 1, infra = TRUE, version = "1.1", 
-encoding = "UTF-8")
+TPLck(sp, corr = TRUE, diffchar = 2, max.distance = 1, infra = TRUE, abbrev = TRUE, 
+version = "1.1", encoding = "UTF-8")
 }
 \arguments{
   \item{sp}{
 A character specifying the genus and specific epithet and, additionally, the infraspecific epithet.
 }
   \item{corr}{
-Logical. If 'TRUE', then removal of spelling errors is performed on the specific epithet (only) prior to taxonomic standardization.
+Logical. If 'TRUE' (default), then removal of spelling errors is performed (only) on the specific and infraspecific epithets prior to taxonomic standardization.
 }
   \item{diffchar}{
 A number indicating the maximum difference between number of characters in corrected and original species names. Not used if corr=FALSE.
@@ -25,6 +25,9 @@ Maximum distance allowed for a match in \code{agrep} function when performing co
 }
   \item{infra}{
 Logical. If 'TRUE' (default) then infraspecific epithets are used to validate the taxonomic status of species names in TPL.
+}
+  \item{abbrev}{
+Logical. If 'TRUE' (default), abbreviations (aff., cf., subsp., var.) and their variants are removed prior to taxonomic standardization.
 }
   \item{version}{
 A character indicating whether to connect to the newest version of TPL (1.1) or to the older one (1.0). Defaults to "1.1".
@@ -43,7 +46,9 @@ The function return an object of class \code{data.frame} with the following comp
 
 \item{$Genus }{Original genus of species provided as input for taxonomic standardization.}
 \item{$Species }{Original specific epithet of species provided as input for taxonomic standardization.}
+\item{$Abbrev }{Standard annotation used in species epithet, including "cf.", "aff.", "s.l.", and "s.str." and their orthographic variants.}
 \item{$Infraspecific }{Original intraspecific epithet of species provided as input for taxonomic standardization. If 'infra=FALSE', this is not shown. }
+\item{$ID }{ The Plant List record 'id'.}
 \item{$Plant.Name.Index }{Logical. If 'TRUE' the name is in TPL.}
 \item{$Taxonomic.status}{Taxonomic status as in TPL, either 'Accepted', 'Synonym', 'Unresolved', or 'Misapplied'.}
 \item{$TPL_version}{Version of TPL used.}
@@ -53,6 +58,7 @@ The function return an object of class \code{data.frame} with the following comp
 \item{$New.Species }{Specific epithet, extracted from TPL for the valid form of the name.}
 \item{$New.Infraspecific }{Infraspecific epithet, extracted from TPL for the valid form of the name.}
 \item{$Authority }{A field designating the scientist(s) who first published the name, extracted from TPL for the valid form of the name.}
+\item{$New.ID }{The Plant List record 'id' for the species name, once synonyms have been replaced by accepted names. In all other cases, this field will be equivalent to 'ID'.}
 \item{$Typo }{Logical. If 'TRUE' there was a spelling error in the specific epithet that has been corrected.}
 \item{$WFormat }{Logical. If 'TRUE', fields in TPL had the wrong format for information to be automatically extracted as they were not properly tabulated or, alternatively, there was not a unique solutions (see 'note').}
 }
