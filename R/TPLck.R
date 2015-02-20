@@ -166,7 +166,7 @@ else if (z > 0) {
 
         syn <- at[pmatch(az, at)] #Looks for line that matches to current name
         syn <- unlist(strsplit(unlist(strsplit(syn, split = ">")), "<"))
-        newgen[[i]] <- syn[13]
+        newgen[[i]] <- ifelse(syn[13]=='×', paste(syn[13], syn[17], sep=""), syn[13])
       }
 
       newgen <- newgen[samp]
