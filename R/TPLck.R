@@ -149,7 +149,7 @@ else if (z > 0) {
         table.sp <- table.sp[table.sp$Confidence.level=="H",]
       }
 
-      samp <- sample(1:nrow(table.sp), min(ceiling(0.25*nrow(table.sp)), 15))
+      samp <- sample(1:nrow(table.sp), min(ceiling(0.5*nrow(table.sp)), 15))
       newgen <- vector()
 
       for(i in samp){
@@ -282,7 +282,14 @@ cck.infra <- agrep(infrasp, table.sp$Infraspecific.epithet, value=TRUE, max.dist
 ddf.infra <- abs(nchar(cck.infra) - nchar(infrasp))
 if(length(cck.infra) > 0) {
 cck.infra <- cck.infra[ddf.infra==min(ddf.infra)]
-ddf.infra <- abs(nchar(cck.infra) - nchar(infrasp))
+}
+#Remove spelling variants (to prevent unnecessary "multi" matches)
+if(length(cck.infra) > 0 && "Spelling variant" %in% table.sp[,12] &&
+     sum(table.sp[,12]=="Spelling variant") < length(cck.infra)){
+  cck.infra <-
+    cck.infra[!cck.infra %in% table.sp[table.sp[,12] %in% 'Spelling variant',
+                                       'Infraspecific.epithet']]
+  #table.sp[,12] is Nomenclatural.status.from.original.data.source
 }
 levs <- length(unique(cck.infra))
 if(length(cck.infra) > 0 && levs == 1) {
