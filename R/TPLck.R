@@ -122,7 +122,7 @@ else if (z > 0) {
 
   ## If Matching to Genus Only ##
 
-  if(is.na(species)){
+  if(species %in% c(NA, 'sp','sp.', '', 1:100)){
     if('Accepted' %in% table.sp$Taxonomic.status.in.TPL){
       table.sp <- table.sp[table.sp$Taxonomic.status.in.TPL=="Accepted",]
       #Consider Genus valid, take first accepted species to assign family, etc.
@@ -143,13 +143,17 @@ else if (z > 0) {
 
     } else if('Synonym' %in% table.sp$Taxonomic.status.in.TPL){
 
+      table.sp <- table.sp[table.sp$Taxonomic.status.in.TPL=="Synonym",]
+      #Remove unresolved names or misapplied names if synonyms are available
+
       #Find most common currently accepted genus, take family, etc from that
 
       if('H' %in% table.sp$Confidence.level){
         table.sp <- table.sp[table.sp$Confidence.level=="H",]
       }
 
-      samp <- sample(1:nrow(table.sp), min(ceiling(0.5*nrow(table.sp)), 15))
+      samp <- if (nrow(table.sp < 10)) {1:nrow(table.sp)} else {
+        sample(1:nrow(table.sp), 10)}
       newgen <- vector()
 
       for(i in samp){
@@ -179,7 +183,8 @@ else if (z > 0) {
         for(i in 1:length(unique(newgen))) {
           freq[i] <- length(newgen[newgen==unique(newgen)[i]])
         }
-        ng <- unique(newgen)[which(freq==max(freq))] #Use the most frequent genus name
+        ng <- unique(newgen)[which(freq==max(freq))][1]
+        #Use the most frequent genus name (if even, pick the first one)
       } else {
         ng <- unique(newgen)
       }
@@ -240,23 +245,33 @@ else if (z > 0) {
   ## If Doing Fuzzy Matching ##
 
 if (length(unique(paste(table.sp$Genus, table.sp$Species))) > 1 && corr==TRUE) {
-spx <- length(agrep(species, "sp", max.distance=0)) + length(agrep(species, "sp.", max.distance=0))
-mf <- c(as.character(1:1000))
-is.mf <- agrep(species, mf, max.distance=list(deletions=1), value=TRUE)
 #Run fuzzy match w/ set max distance between given and matched sp epithet
 cck <- agrep(species, table.sp$Species, value=TRUE, max.distance=max.distance)
 ddf <- abs(nchar(cck) - nchar(species))
+if(max.distance > 1 & length(cck) > 1){
+  #if mult matches and max distance >1, look for matches w/in a max dist of 1
+  cck2 <- agrep(species, table.sp$Species, value = TRUE, max.distance = 1)
+  if(length(cck2)>0) {
+    ddf <- ddf[cck %in% cck2]
+    cck <- cck[cck %in% cck2]
+  }
+}
 if(length(cck) > 0) {
 cck <- cck[ddf==min(ddf)]
 #If mult matches, select smallest diff in number of char from original
 ddf <- abs(nchar(cck) - nchar(species))
 }
-levs <- length(unique(cck))
+
+if(length(unique(cck))>1){
+  warning(paste(sp, 'does not match to any species, fuzzy matching identifies multiple possible matches'))
+  Multi <- TRUE
+  cck <- cck[1]
+}
 
 ## Search for Best Fuzzy Match ##
 
-if(length(is.mf) == 0 && length(cck) > 0 && ddf <= diffchar && levs == 1 && spx == 0) {
-searchstring <- paste("http://www.theplantlist.org/tpl", vv, "/search?q=",genus,"+",cck[1], "&csv=true", sep="")
+if(length(unique(cck)) == 1 && ddf <= diffchar) {
+searchstring <- paste("http://www.theplantlist.org/tpl", vv, "/search?q=",genus,"+",cck, "&csv=true", sep="")
 try(table.sp <- read.table(searchstring, header=TRUE, sep=",", fill=TRUE,colClasses = "character", as.is = TRUE, encoding=encoding), silent=T)
 k <- dim(table.sp)[2]
 z <- dim(table.sp)[1]
@@ -283,16 +298,16 @@ ddf.infra <- abs(nchar(cck.infra) - nchar(infrasp))
 if(length(cck.infra) > 0) {
 cck.infra <- cck.infra[ddf.infra==min(ddf.infra)]
 }
-#Remove spelling variants (to prevent unnecessary "multi" matches)
-if(length(cck.infra) > 0 && "Spelling variant" %in% table.sp[,12] &&
-     sum(table.sp[,12]=="Spelling variant") < length(cck.infra)){
-  cck.infra <-
-    cck.infra[!cck.infra %in% table.sp[table.sp[,12] %in% 'Spelling variant',
-                                       'Infraspecific.epithet']]
-  #table.sp[,12] is Nomenclatural.status.from.original.data.source
+if(max.distance > 1 & length(cck.infra) > 1){
+  #if mult matches and max distance >1, look for matches w/in a max dist of 1
+  cck2.infra <- agrep(infrasp, table.sp$Infraspecific.epithet, value = TRUE,
+                      max.distance = 1)
+  if(length(cck2.infra)>0) {
+    ddf.infra <- ddf.infra[cck.infra %in% cck2.infra]
+    cck.infra <- cck.infra[cck.infra %in% cck2.infra]
+  }
 }
-levs <- length(unique(cck.infra))
-if(length(cck.infra) > 0 && levs == 1) {
+if(length(unique(cck.infra)) == 1 && min(ddf.infra)<= diffchar) {
 infrasp <- unique(cck.infra)
 grep1 <- grep(infrasp, table.sp$Infraspecific.epithet, value=TRUE)
 ngrep <- nchar(grep1)
@@ -300,15 +315,15 @@ marker.infra <- TRUE
 }
 }
 
-  #Match to Infrasp Name w/ same # of char
-  if (infra==TRUE && length(grep(infrasp, table.sp$Infraspecific.epithet))>0 && abs(ngrep-(nchar(infrasp)))==0) {
+#Looks for exact match for infrasp and correct match for abbrev
+  if (infra==TRUE && infrasp %in% table.sp$Infraspecific.epithet) {
 table.sp <- table.sp[table.sp$Infraspecific.epithet==infrasp,]
 if (dim(table.sp)[1]>1 && sum(!is.na(grep(Abbrev, table.sp$Infraspecific.rank, ignore.case=TRUE)))>0) {
 table.sp <- table.sp[table.sp$Infraspecific.rank==Abbrev,]
 }
 } else
 
-if (infra==FALSE || length(grep(infrasp, table.sp$Infraspecific.epithet))==0 || abs(ngrep-(nchar(infrasp)))>0) {
+if (infra==FALSE || !infrasp %in% table.sp$Infraspecific.epithet) {
 
 #Or match to infrasp name w/ NA or blank
 if(table.sp$Infraspecific.epithet %in% c("", NA) && length(grep(Species, table.sp$Infraspecific.epithet))==0) {
