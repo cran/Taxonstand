@@ -130,7 +130,8 @@ else if (z > 0) {
       Plant.Name.Index <- TRUE
       Taxonomic.status <- table.sp$Taxonomic.status.in.TPL[1]
       Family <- table.sp$Family[1]
-      New.Genus <- table.sp$Genus[1]
+      New.Genus <- if('' %in% table.sp$Genus.hybrid.marker) {table.sp$Genus[1]} else {
+        paste(table.sp$Genus.hybrid.marker[1], table.sp$Genus[1], sep='')}
       New.Hybrid.marker <- ''
       New.Species <- ''
       New.Abbrev <- ""
@@ -170,7 +171,7 @@ else if (z > 0) {
 
         syn <- at[pmatch(az, at)] #Looks for line that matches to current name
         syn <- unlist(strsplit(unlist(strsplit(syn, split = ">")), "<"))
-        newgen[[i]] <- ifelse(syn[13]=='×', paste(syn[13], syn[17], sep=""), syn[13])
+        newgen[[i]] <- ifelse(syn[13]=='×', syn[17], syn[13])
       }
 
       newgen <- newgen[samp]
@@ -212,7 +213,8 @@ else if (z > 0) {
       Plant.Name.Index <- TRUE
       Taxonomic.status <- 'Synonym'
       Family <- table.sp$Family[1]
-      New.Genus <- ng
+      New.Genus <- if('' %in% table.sp$Genus.hybrid.marker) {table.sp$Genus[1]} else {
+        paste(table.sp$Genus.hybrid.marker[1], table.sp$Genus[1], sep='')}
       New.Hybrid.marker <- ''
       New.Species <- ''
       New.Abbrev <- ""
@@ -367,7 +369,8 @@ if(nrow(table.sp)>1){
 Plant.Name.Index <- TRUE
 Taxonomic.status <- table.sp$Taxonomic.status.in.TPL[1]
 Family <- table.sp$Family[1]
-New.Genus <- table.sp$Genus[1]
+New.Genus <- if('' %in% table.sp$Genus.hybrid.marker) {table.sp$Genus[1]} else {
+  paste(table.sp$Genus.hybrid.marker[1], table.sp$Genus[1], sep='')}
 New.Hybrid.marker <- table.sp$Species.hybrid.marker[1]
 New.Species <- table.sp$Species[1]
 if (infra == T && length(grep(infrasp, table.sp$Infraspecific.epithet))>0) {
@@ -435,7 +438,7 @@ n <- pmatch(az, at) #Looks for line that matches to current name
 nsen <- at[n]
 nsen <- unlist(strsplit(unlist(strsplit(nsen, split=">")), "<"))
 if (version=="1.1") {
-searchstring <- paste("http://www.theplantlist.org/tpl", vv, "/search?q=",nsen[13],"+",ifelse(nsen[17]=="×", nsen[21], nsen[17]), "&csv=true", sep="")
+searchstring <- paste("http://www.theplantlist.org/tpl", vv, "/search?q=",ifelse(nsen[13] =="×",nsen[17],nsen[13]),"+",ifelse("×" %in% nsen[c(13,17)], nsen[21],nsen[17]), "&csv=true", sep="")
 } else
 if (version=="1.0") {
 searchstring <- paste("http://www.theplantlist.org/tpl", vv, "/search?q=",nsen[11],"+",ifelse(nsen[15]=="×", nsen[19], nsen[15]), "&csv=true", sep="")
@@ -443,10 +446,10 @@ searchstring <- paste("http://www.theplantlist.org/tpl", vv, "/search?q=",nsen[1
 kup <- length(grep("var.", nsen)) + length(grep("subsp.", nsen))
 if(infra==T && kup > 0) {
 if (version=="1.1") {
-infrasp <- ifelse(nsen[17]=="×", nsen[29], nsen[25])
+infrasp <- ifelse("×" %in% nsen[c(13,17)], nsen[29], nsen[25])
 } else
 if (version=="1.0") {
-infrasp <- ifelse(nsen[15]=="×", nsen[27], nsen[23])
+infrasp <- ifelse(nsen[15] == "×", nsen[27], nsen[23])
 }
 } else
 if(kup == 0) {
@@ -490,7 +493,8 @@ if(nrow(table.sp)>1){
 #If still mutl entries, take first one
 Plant.Name.Index <- TRUE
 Family <- table.sp$Family[1]
-New.Genus <- table.sp$Genus[1]
+New.Genus <- if('' %in% table.sp$Genus.hybrid.marker) {table.sp$Genus[1]} else {
+  paste(table.sp$Genus.hybrid.marker[1], table.sp$Genus[1], sep='')}
 New.Hybrid.marker <- table.sp$Species.hybrid.marker[1]
 New.Species <- table.sp$Species[1]
 New.Abbrev <- table.sp$Infraspecific.rank[1]
@@ -505,7 +509,8 @@ if (sum(table.sp$Taxonomic.status.in.TPL=="Accepted")==0 && sum(table.sp$Taxonom
 Plant.Name.Index <- TRUE
 Taxonomic.status <- "Unresolved"
 Family <- table.sp$Family[1]
-New.Genus <- table.sp$Genus[1]
+New.Genus <- if('' %in% table.sp$Genus.hybrid.marker) {table.sp$Genus[1]} else {
+  paste(table.sp$Genus.hybrid.marker[1], table.sp$Genus[1], sep='')}
 New.Hybrid.marker <- table.sp$Species.hybrid.marker[1]
 New.Species <- table.sp$Species[1]
 New.Abbrev <- table.sp$Infraspecific.rank[1]
