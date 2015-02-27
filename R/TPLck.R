@@ -285,10 +285,20 @@ if (length(unique(paste(table.sp$Genus, table.sp$Species))) > 1) {
   return(notfound(id, Genus, Species, Abbrev, Infraspecific, version,
                   New.Hybrid.marker))
   #If still returning entire genus list, or corr=F, match was not found
-  #   could potentially alter code here to search for 2nd best match?
 }
 
+## If Direct Match or After Fuzzy Matching ##
+
 if (length(unique(paste(table.sp$Genus, table.sp$Species))) == 1) {
+
+  #If genus name matches to only one entry in TPL, it is automatically returned,
+  #   regardless of whether it matches the submitted specific epithet
+  #   Here, will reject if it does not match the specific epithet
+  if(!species %in% table.sp$Species & !marker) {
+    return(notfound(id, Genus, Species, Abbrev, Infraspecific, version,
+                    New.Hybrid.marker))
+  }
+
 grep1 <- grep(infrasp, table.sp$Infraspecific.epithet, value=TRUE)
 ngrep <- nchar(grep1)
 
