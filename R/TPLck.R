@@ -73,10 +73,11 @@ notfound <- function(id, Genus, Species, Abbrev, Infraspecific, version,
   Family <- ""
   Taxonomic.status <- ""
   Plant.Name.Index <- FALSE
-  New.Genus <- Genus
-  New.Species <- Species
-  New.Abbrev <- Abbrev
-  New.Infraspecific <- Infraspecific
+  #If no match found, returns NA for new genus and species to avoid confusion
+  New.Genus <- NA
+  New.Species <- NA
+  New.Abbrev <- ''
+  New.Infraspecific <- ''
   Authority <- ""
   Typo <- FALSE
   WFormat <- FALSE
