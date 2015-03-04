@@ -1,5 +1,5 @@
 TPL <-
-function(splist, genus=NULL, species=NULL, infrasp=NULL, infra=TRUE, abbrev=TRUE, corr=TRUE, diffchar=2, max.distance=1, version="1.1", encoding="UTF-8", file="") {
+function(splist, id=NULL, genus=NULL, species=NULL, infrasp=NULL, infra=TRUE, abbrev=TRUE, corr=TRUE, diffchar=2, max.distance=1, version="1.1", encoding="UTF-8", file="") {
 splist2 <- NULL
 try(splist2 <- splist, silent=TRUE)
 if(!is.null(splist2) && (!is.null(genus) || !is.null(species) || !is.null(infrasp))) {
@@ -36,17 +36,23 @@ splist <- paste(genus, species)
 #splist <- gsub("   ", " ", splist, fixed=TRUE)
 #splist <- gsub("  ", " ", splist, fixed=TRUE)
 #splist <- gsub("_", "", splist, fixed=TRUE)
-#for(i in 1:length(splist)) {splist[i] <- ifelse(substr(splist[i], 1, 1)==" ", substr(splist[i], 2, nchar(splist[i])), splist[i])} 
+#for(i in 1:length(splist)) {splist[i] <- ifelse(substr(splist[i], 1, 1)==" ", substr(splist[i], 2, nchar(splist[i])), splist[i])}
 
 
 TPLck2 <- function(d) {
-TPLck(sp=d, corr=corr, diffchar=diffchar, max.distance=max.distance, infra=infra, abbrev=abbrev, version=version, encoding=encoding)
+  sp <- strsplit(d, ":")[[1]][1]
+  id <- strsplit(d, ":")[[1]][2]
+TPLck(sp=sp, corr=corr, diffchar=diffchar, max.distance=max.distance, infra=infra, abbrev=abbrev, version=version, encoding=encoding, id = id)
 }
-results <- do.call("rbind", lapply(splist, TPLck2))
+results <- do.call("rbind", lapply(paste(splist, id, sep=":"), TPLck2))
 #results$Infraspecific <- ifelse(results$Infraspecific=="NA", "", as.character(results$Infraspecific))
 #results <- data.frame(results[,1:2], Abbrev=as.character(abbr), results[,-c(1:2)])
 if(infra==FALSE) {
-results <- results[,-c(4,13)]
+results <- results[,-which(names(results) %in% c('Infraspecific','New.Infraspecific',
+                                                 'New.Abbrev'))]
+}
+if(sum(is.na(results$UserID))==nrow(results)) {
+  results <- results[,-which(names(results)=="UserID")]
 }
 if(nchar(file)>0) {
 write.csv(results, file=file, row.names=F)
