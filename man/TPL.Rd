@@ -7,8 +7,9 @@ Connection to The Plant List (TPL) website to check for the validity of a list o
 Connects to TPL and validates the name of a vector of plant species names, replacing synonyms to accepted names and removing orthographical errors in plant names
 }
 \usage{
-TPL(splist, genus = NULL, species = NULL, infrasp = NULL, infra = TRUE, abbrev = TRUE, 
-corr = TRUE, diffchar = 2, max.distance = 1, version = "1.1", encoding = "UTF-8",
+TPL(splist, genus = NULL, species = NULL, infrasp = NULL, 
+infra = TRUE, abbrev = TRUE, corr = TRUE, diffchar = 2, 
+max.distance = 1, version = "1.1", encoding = "UTF-8",
 file = "")
 }
 \arguments{
@@ -91,7 +92,7 @@ Error in file(con, "r") : cannot open the connection
 In addition: Warning message:
 In file(con, "r") : cannot open: HTTP status was '404 Not Found'
 
-The code has been fixed to avoid this issue when retrieving data from The Plant List. Nonetheless, if users keep experiencing the same problem, please report it to the maintainer."
+The code has been fixed in subsequent versions (> 1.3) to avoid this issue when retrieving data from The Plant List. Nonetheless, if users keep experiencing the same problem, please report it to the maintainer."
 }
 
 \seealso{
@@ -105,7 +106,8 @@ data(bryophytes)
 r1 <- TPL(bryophytes$Full.name[1:20], corr=TRUE)
 str(r1)
 
-# A separate specification for genera, specific, and infraspecific epithets 
+# A separate specification for genera, specific, and infraspecific
+# epithets 
 r2 <- TPL(genus = bryophytes$Genus, species = bryophytes$Species, 
 infrasp = bryophytes$Intraspecific, corr=TRUE)
 str(r2)
@@ -117,11 +119,13 @@ require(dismo)
 # Download data containing all records available in GBIF of all species 
 # within genus Oreopanax (GBIF table)
 oreopanax <- gbif("Oreopanax", "*", geo=T)
-# But a list of species can be also downloaded from GBIF for a defined geographical area
+# But a list of species can be also downloaded from GBIF for a defined
+# geographical area
 
-# Names downloaded from GBIF often include the authority. 
-# The column names need to be split using the spaces as the split. 
-# This will result in multiple columns. We essentially only need the first two columns.
+# Names downloaded from GBIF often include the authority
+# The column names need to be split using the spaces as the split 
+# This will result in multiple columns. We essentially only need the
+# first two columns
 sp.list <- do.call("rbind", strsplit(oreopanax$species, split=" "))
 sp.list <- as.factor(paste(sp.list[,1], sp.list[,2]))
 

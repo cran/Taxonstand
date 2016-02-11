@@ -7,8 +7,9 @@ Connects to The Plant List (TPL) website and check for the validity of a plant n
 Connects to TPL and validates the name of a single plant species name, replacing synonyms for accepted names and removing orthographical errors in plant names
 }
 \usage{
-TPLck(sp, corr = TRUE, diffchar = 2, max.distance = 1, infra = TRUE, abbrev = TRUE, 
-version = "1.1", encoding = "UTF-8")
+TPLck(sp, corr = TRUE, diffchar = 2, max.distance = 1, 
+infra = TRUE, abbrev = TRUE, version = "1.1",
+encoding = "UTF-8")
 }
 \arguments{
   \item{sp}{

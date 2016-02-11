@@ -4,7 +4,7 @@ sp <- as.character(sp)
 
 abbr <- NA
 if(abbrev==TRUE) {
-vec0 <- c("nothossp. ", "nothossp.", " nothossp ", "nothosubsp. ", "nothosubsp.", " nothosubsp ", "cultivar. ", "cultivar.", " cultivar ", "subfo. ", " subfo ", "subf. ", "subf.", " subf ", " subproles ", "cf. ", "cf.", " cf ", "aff. ", "aff.", " aff ", "s.l. ", "s.l.", "s.l ", "s.str. ", "s.str.", "s.str ", "\u00D7", "x. ", "x.", " x ", "X. ", "X.", " X ", "X ", "f. ", "f.", " f ", "fo. ", "fo.", " fo ", " forma ", "subvar.", " subvar ", "var. ", "var.", " var ", "subsp. ", "subsp.", " subsp ", "ssp. ", "ssp.", " ssp ", " gama ", " grex ", "lus. ", "lus.", " lus ", " lusus ", "monstr. ", " monstr ", "nm. ", "nm.", " nm ", "prol. ", "prol.", " prol ", " proles ", " race ", "subvar. ", "cv. ", "cv.", " cv ")
+vec0 <- c("nothossp. ", "nothossp.", " nothossp ", "nothosubsp. ", "nothosubsp.", " nothosubsp ", "cultivar. ", "cultivar.", " cultivar ", "subfo. ", " subfo ", "subf. ", "subf.", " subf ", " subproles ", "cf. ", "cf.", " cf ", "aff. ", "aff.", " aff ", "s.l. ", "s.l.", "s.l ", "s.str. ", "s.str.", "s.str ", "\u00D7", "x. ", "x.", " x ", "X. ", "X.", " X ", "f. ", "f.", " f ", "fo. ", "fo.", " fo ", " forma ", "subvar.", " subvar ", "var. ", "var.", " var ", "subsp. ", "subsp.", " subsp ", "ssp. ", "ssp.", " ssp ", " gama ", " grex ", "lus. ", "lus.", " lus ", " lusus ", "monstr. ", " monstr ", "nm. ", "nm.", " nm ", "prol. ", "prol.", " prol ", " proles ", " race ", "subvar. ", "cv. ", "cv.", " cv ")
 
 for(j in 1:length(vec0)) {
 abbr <- ifelse(length(grep(vec0[j], sp, fixed=TRUE))>0, vec0[j], abbr)
