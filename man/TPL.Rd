@@ -1,142 +1,197 @@
 \name{TPL}
 \alias{TPL}
 \title{
-Connection to The Plant List (TPL) website to check for the validity of a list of plant names
+Standardize plant names according to The Plant List.
 }
 \description{
-Connects to TPL and validates the name of a vector of plant species names, replacing synonyms to accepted names and removing orthographical errors in plant names
+Connects to The Plant List (TPL) website and validates the names of a vector of
+plant taxa, replacing synonyms by accepted names and removing orthographical
+errors in plant names.
 }
 \usage{
 TPL(splist, genus = NULL, species = NULL, infrasp = NULL, 
-infra = TRUE, abbrev = TRUE, corr = TRUE, diffchar = 2, 
-max.distance = 1, version = "1.1", encoding = "UTF-8",
-file = "")
+infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, 
+version = "1.1", encoding = "UTF-8", author = TRUE, 
+drop.lower.level = FALSE, file = "", silent = TRUE, repeats = 6)
 }
 \arguments{
-  \item{splist}{
-A vector of plant names, each element including the genus and specific epithet and, additionally, the infraspecific epithet.
-}
-  \item{genus}{
-A vector containing the genera for plant species names.
-}
-  \item{species}{
-A vector containing the specific epithets for plant species names.
-}
-  \item{infrasp}{
-A vector containing the infraspecific epithets for plant species names (i.e. varieties and subspecies).
-}
-  \item{infra}{
-Logical. If 'TRUE' (default) then infraspecific epithets are used to validate the taxonomic status of species names in TPL.
-}
-  \item{abbrev}{
-Logical. If 'TRUE' (default), abbreviations (aff., cf., subsp., var.) and their variants are removed prior to taxonomic standardization.
-}
-  \item{corr}{
-Logical. If 'TRUE' (default), then removal of orthographical errors is performed (only) on specific and infraspecific epithets prior to taxonomic standardization.
-}
-  \item{diffchar}{
-A number indicating the maximum difference between number of characters in corrected and original species names. Not used if corr=FALSE.
-}
-  \item{max.distance}{
-Maximum distance allowed for a match in \code{agrep} function when performing corrections of orthographical errors in specific epithets. Not used if corr=FALSE.
-}
-  \item{version}{
-A character indicating whether to connect to the newest version of TPL (1.1) or to the older one (1.0). Defaults to "1.1".
-}
-  \item{encoding}{
-Encoding to be assumed for input strings.  It is used to mark character strings as known to be in Latin-1 or UTF-8 (see 'Encoding'). It is not used to re-encode the input, but allows R to handle encoded strings in their native encoding (if one of those two). Defaults to "UTF-8" but it can be changed to "unknown" or "Latin-1".
-}
-  \item{file}{
-Either a character string naming a file or a connection open for writing. "" (default) indicates output to the console.
-}
+\item{splist}{A character vector specifying the input taxa, each element
+including genus and specific epithet and, potentially, author name and
+infraspecific abbreviation and epithet.}
+
+\item{genus}{A character vector containing the genera of plant taxon names.}
+
+\item{species}{A character vector containing the specific epithets of plant
+taxon names.}
+
+\item{infrasp}{A character vector containing the infraspecific epithets of
+plant taxon names.}
+
+\item{infra}{Logical. If TRUE (default), infraspecific epithets are used to
+match taxon names in TPL.}
+
+\item{corr}{Logical. If TRUE (default), spelling errors are corrected (only)
+in the specific and infraspecific epithets prior to taxonomic standardization.}
+
+\item{diffchar}{A number indicating the maximum difference between the number
+of characters in corrected and original taxon names. Not used if corr = FALSE.}
+
+\item{max.distance}{A number indicating the maximum distance allowed for a
+match in \code{\link[base]{agrep}} when performing corrections of
+spelling errors in specific epithets. Not used if corr = FALSE.}
+
+\item{version}{A character vector indicating whether to connect to the newest
+version of TPL (1.1) or to the older one (1.0). Defaults to "1.1".}
+
+\item{encoding}{Encoding to be assumed for input strings from TPL website;
+defaults to "UTF-8" (see \code{\link[utils]{read.csv}} and
+\code{\link[base]{Encoding}}).}
+
+\item{author}{Logical. If TRUE (default), the function tries to extract
+author names from the input taxon (see \strong{Details}).}
+
+\item{drop.lower.level}{Logical. If TRUE, the variety is dropped from the
+input taxon if both subspecies and variety are given, and the forma is dropped
+from the input taxon if both subspecies or variety and forma are given. If
+specific and subspecific epithet are identical, the subspecies [variety] part
+is dropped instead, and variety [forma] is kept. Defaults to FALSE.}
+
+\item{file}{Either a character string naming a file or a connection open for
+writing. "" (default) indicates output to the console.}
+
+\item{silent}{Logical. If FALSE, the function prints the taxon name that is
+currently processed in the output. Defaults to TRUE.}
+
+\item{repeats}{A number indicating how many times \code{TPLck} should be
+called if no connection to TPL website can be established (temporarily).}
 }
 \details{
-The procedure used for taxonomic standardization is based on function \code{TPLck}. If 'infra=FALSE', then infraspecific epithets are neither considered for species name validation in TPL, nor returned in the output.
+The procedure used for taxonomic standardization is based on function
+\code{\link{TPLck}}. A progress bar indicates the proportion of taxon names processed
+so far. In case the TPL website cannot be reached temporarily, the function returns
+an error but repeats trying to match the given taxon multiple times (see
+\code{repeats}). If standardization is still not successful, the input taxon is
+returned in field 'Taxon' with NA in all other fields.
 }
 \value{
-The function return an object of class \code{data.frame} with the following components:
+A \code{data.frame} with the following components:
 
-\item{$Genus }{Original genus of species provided as input for taxonomic standardization.}
-\item{$Species }{Original specific epithet of species provided as input for taxonomic standardization.}
-\item{$Abbrev }{Standard annotation used in species epithet, including "cf.", "aff.", "s.l.", and "s.str." and their orthographic variants.}
-\item{$Infraspecific }{Original intraspecific epithet of species provided as input for taxonomic standardization. If 'infra=FALSE', this is not shown. }
-\item{$ID }{ The Plant List record 'id'.}
-\item{$Plant.Name.Index }{Logical. If 'TRUE' the name is in TPL.}
-\item{$Taxonomic.status}{Taxonomic status as in TPL, either 'Accepted', 'Synonym', 'Unresolved', or 'Misapplied'.}
-\item{$TPL_version}{Version of TPL used.}
-\item{$Family }{Family name, extracted from TPL for the valid form of the name.}
-\item{$New.Genus }{Genus, extracted from TPL for the valid form of the name.}
-\item{$New.Hybrid.marker }{Hybrid marker, extracted from TPL for the valid form of the name.}
-\item{$New.Species }{Specific epithet, extracted from TPL for the valid form of the name.}
-\item{$New.Infraspecific }{Infraspecific epithet, extracted from TPL for the valid form of the name.}
-\item{$Authority }{A field designating the scientist(s) who first published the name, extracted from TPL for the valid form of the name.}
-\item{$New.ID }{The Plant List record 'id' for the species name, once synonyms have been replaced by accepted names. In all other cases, this field will be equivalent to 'ID'.}
-\item{$Typo }{Logical. If 'TRUE' there was a spelling error in the specific epithet that has been corrected.}
-\item{$WFormat }{Logical. If 'TRUE', fields in TPL had the wrong format for information to be automatically extracted as they were not properly tabulated or, alternatively, there was not a unique solutions (see 'note').}
+\item{$Taxon}{Original taxon name as provided in input.}
+
+\item{$Genus}{Original genus name as provided in input.}
+
+\item{$Hybrid.marker}{Hybrid marker, if taxon is indicated as hybrid in the input.}
+
+\item{$Species}{Original specific epithet as provided in input.}
+
+\item{$Abbrev}{Original abbreviation other than infraspecific rank included in
+input taxon, including "cf.", "aff.", "agg.", "nom. cons.", "nom. cons. prop.",
+"nom. inval.", "s.l.", and "s.str." and their orthographic variants.}
+
+\item{$Infraspecific.rank}{Original infraspecific rank abbreviation as provided
+in input, including "subsp.", "var.", "f.", and their orthographic variants.}
+
+\item{$Infraspecific}{Original infraspecific epithet as provided in
+input. If infra = FALSE, this is not shown.}
+
+\item{$Authority}{Original author of taxon name as provided in input.}
+
+\item{$ID}{The Plant List record ID of the matched taxon before resolving synonyms.}
+
+\item{$Plant.Name.Index}{Logical. If TRUE the name is in TPL. If a taxon at
+infraspecific level is not in TPL, Plant.Name.Index equals FALSE, except for
+nominal infraspecies. Also compare \code{Higher.level}.}
+
+\item{$TPL.version}{Version of TPL used.}
+
+\item{$Taxonomic.status}{Taxonomic status of the matched taxon in TPL, either
+'Accepted', 'Synonym', 'Unresolved', or 'Misapplied'.}
+
+\item{$Family}{Family name, extracted from TPL for the valid form of the taxon.}
+
+\item{$New.Genus}{Genus name, extracted from TPL for the valid form of the taxon.}
+
+\item{$New.Hybrid.marker}{Hybrid marker, extracted from TPL for the valid form
+of the taxon.}
+
+\item{$New.Species}{Specific epithet, extracted from TPL for the valid form of the taxon.}
+
+\item{$New.Infraspecific.rank}{Infraspecific rank abbreviation, extracted from TPL for
+the valid form of the taxon, including "subsp.", "var." and "f.".}
+
+\item{$New.Infraspecific}{Infraspecific epithet, extracted from TPL for the
+valid form of the taxon.}
+
+\item{$New.Authority}{Author of taxon name, extracted from TPL for the valid
+form of the taxon.}
+
+\item{$New.ID}{The Plant List record ID of the taxon, once synonyms have been
+replaced by valid names. For accepted and unresolved names, this field will
+be equivalent to \code{ID}.}
+
+\item{$New.Taxonomic.status}{Taxonomic status of the resolved taxon in TPL,
+once synonyms have been replaced by valid names. 'Accepted' or 'Unresolved'.}
+
+\item{$Typo}{Logical. If TRUE there was a spelling error in the specific or
+infraspecific epithet that has been corrected.}
+
+\item{$WFormat}{Logical. If TRUE, fields in TPL had the wrong format for
+information to be automatically extracted as they were not properly tabulated
+or, alternatively, there was not a unique solution.}
+
+\item{$Higher.level}{Logical. If TRUE, the input taxon is at infraspecific
+level and does not occur in TPL, and the higher (species) level is provided in
+the output instead. Also see \code{Plant.Name.Index}.}
+
+\item{$Date}{Current date according to \code{\link[base]{Sys.Date}}.}
 }
 \references{
-Cayuela, L., Granzow-de la Cerda, I., Albuquerque, F.S. and Golicher, J.D. 2012. Taxonstand: An R package for species names standardisation in vegetation databases. \emph{Methods in Ecology and Evolution}, 3(6): 1078-1083.
+Cayuela, L., Granzow-de la Cerda, I., Albuquerque, F.S. and Golicher, J.D. 2012.
+Taxonstand: An R package for species names standardization in vegetation databases.
+\emph{Methods in Ecology and Evolution}, 3(6): 1078-1083.
 
-Kalwij, J.M. 2012. Review of 'The Plant List, a working list of all plant species'. \emph{Journal of Vegetation Science}, 23(5): 998-1002.
-
+Kalwij, J.M. 2012. Review of 'The Plant List, a working list of all plant species'.
+\emph{Journal of Vegetation Science}, 23(5): 998-1002.
 }
 \author{
-Luis Cayuela
+  Luis Cayuela & Anke Stein
 }
-\note{
-Various limitations have been identified to date in the implementation of this function. First, homonyms (i.e. names orthographically identical but applied to different taxa) cannot be flagged. Second, if the infraspecific epithet in the input does not match any of the infraspecific epithets provided by TPL, then the first accepted name without infraspecific epithets will be selected as the best match. If all names provided by TPL bear infraspecific epithets but are all synonyms (e.g. \emph{Pottia starkeana}), then none is considered as a best match and the output will return the original name in the input.
-
-In addition, some users have experienced problems when using Taxonstand version 1.3, particularly under Windows O.S. This problem arises from differences in the encoding system used by the server and the client, which results in the following error message:
-
-Error in file(con, "r") : cannot open the connection
-In addition: Warning message:
-In file(con, "r") : cannot open: HTTP status was '404 Not Found'
-
-The code has been fixed in subsequent versions (> 1.3) to avoid this issue when retrieving data from The Plant List. Nonetheless, if users keep experiencing the same problem, please report it to the maintainer."
-}
-
 \seealso{
-See also \code{\link{TPLck}}.
+\code{\link{TPLck}}.
 }
 \examples{
-  \dontrun{
+\dontrun{
 data(bryophytes)
 
 # Species names in full
-r1 <- TPL(bryophytes$Full.name[1:20], corr=TRUE)
+r1 <- TPL(bryophytes$Full.name[1:20], corr = TRUE)
 str(r1)
 
 # A separate specification for genera, specific, and infraspecific
-# epithets 
-r2 <- TPL(genus = bryophytes$Genus, species = bryophytes$Species, 
-infrasp = bryophytes$Intraspecific, corr=TRUE)
+# epithets
+r2 <- TPL(genus = bryophytes$Genus, species = bryophytes$Species,
+infrasp = bryophytes$Intraspecific, corr = TRUE)
 str(r2)
 
-####################################
-### An example using data from GBIF
-####################################
+#----------------------------------
+# An example using data from GBIF
+#----------------------------------
+# Download all records available in GBIF of all species within genus
+# Liriodendron (GBIF table; note that a list of species can be also
+# downloaded from GBIF for a defined geographical area)
 require(dismo)
-# Download data containing all records available in GBIF of all species 
-# within genus Oreopanax (GBIF table)
-oreopanax <- gbif("Oreopanax", "*", geo=T)
-# But a list of species can be also downloaded from GBIF for a defined
-# geographical area
+liriodendron <- gbif("Liriodendron", "*", geo = TRUE)
 
-# Names downloaded from GBIF often include the authority
-# The column names need to be split using the spaces as the split 
-# This will result in multiple columns. We essentially only need the
-# first two columns
-sp.list <- do.call("rbind", strsplit(oreopanax$species, split=" "))
-sp.list <- as.factor(paste(sp.list[,1], sp.list[,2]))
-
-# Perform taxonomic standardisation on plant names list (TPL table)
-sp.check <- TPL(levels(sp.list), infra=FALSE, corr=TRUE)
+# Perform taxonomic standardization on plant names (TPL table)
+sp.check <- TPL(unique(liriodendron$scientificName), infra = TRUE, 
+corr = TRUE)
 head(sp.check)
 
-# Bind GBIF table with TPL table
-oreopanax$id <- as.numeric(sp.list)
-sp.check$id <- 1:dim(sp.check)[1]
-oreopanax.check <- merge(oreopanax, sp.check, by="id", all=T)
+# Join GBIF table with TPL table
+require(dplyr)
+liriodendron.check <- liriodendron \%>\%
+left_join(., sp.check, by = c("scientificName" = "Taxon"))
+
 }
 }
 \keyword{ vegetation analysis }
