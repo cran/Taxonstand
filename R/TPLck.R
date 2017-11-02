@@ -20,7 +20,7 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 
   # extract abbreviation
   abbr <- NA
-  vec <- c(" aff(\\.| )", " aggr?(\\.| |$)", " cf(\\.| )", " group( |$)", ",? ?nom\\. inval\\.", ",? ?nom\\. cons?\\.", ",? ?nom\\. conserv\\.",  ",? ?nom\\. cons\\. prop\\.", " s\\. ?l\\.?$", " s\\. ?l\\. ", " s(ens)?[\\.u] ?lat[\\.u]$", "sensu latu", " s\\. ?s\\.?$", " s\\. ?s\\.? ", " s\\. ?str\\.?$", " s\\. ?str\\.? ", "sensu strictu")
+  vec <- c(" aff(\\.| )", " aggr?(\\.| |$)", "(^| )cf(\\.| )", " group( |$)", ",? ?nom\\. inval\\.",  ",? ?nom\\. cons\\. prop\\.", ",? ?nom\\. conserv\\.", ",? ?nom\\. cons?\\.", " p\\. ?p\\.", " s\\. ?l\\.?$", " s\\. ?l\\. ", " s(ens)?[\\.u] ?lat[\\.u]$", "sensu latu", " s\\. ?s\\.?$", " s\\. ?s\\.? ", " s\\. ?str\\.?$", " s\\. ?str\\.? ", "sensu str\\.", "sensu strictu")
   remov <- NA
   for (i in 1:length(vec)) {
     remov <- if (grepl(vec[i], sp)) {na.omit(c(remov, gsub(paste0(".*(", vec[i], ").*"), "\\1", sp)))} else {remov}
@@ -124,8 +124,8 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
   } else {
     spparts <- unlist(strsplit(sp, " "))
     if (length(spparts) > 2) {
-      authorstrings <- c("auctt?\\.", "div\\.", "mult\\.", "non", "plur\\.", "des?", "et", "ex\\.?", "al\\.\\)?", "f\\.\\)?", "fil\\.\\)?", "hort\\.", "van", "von", "v\\.")
-      infrasp_pos <- grep(paste0("^(?!^", paste0(authorstrings, collapse = "$|^"), "$)[a-z]"), spparts[-c(1:2)], perl = TRUE) + 2
+      authorstrings <- c("and", "anon\\.", "auctt?(\\.| )", "div\\.", "emend\\.", "mult\\.", "non", "plur\\.", "des?", "et", "ex\\.?", "al\\.\\)?", "f\\.\\)?", "fil\\.\\)?", "hort\\.", "sensu", "van", "von", "v\\.", "d'") # put "d'" at the end to have no "$" behind
+      infrasp_pos <- grep(paste0("^(?!^", paste0(authorstrings, collapse = "$|^"), ")[a-z]"), spparts[-c(1:2)], perl = TRUE) + 2
       if (length(infrasp_pos) > 1) {
         if (length(unique(spparts[infrasp_pos])) > 1) {
           warning(paste0(sp_orig, ": The infraspecific epithet was not unambiguously matched"))
@@ -324,7 +324,7 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
               if (length(grep(paste0("^", Infraspecific, "$"), table.sp$Infraspecific.epithet, fixed = FALSE)) == 0 && nominal.infra == TRUE) {
                 table.sp <- table.sp[table.sp$Infraspecific.epithet == "", ]
                 infrasp <- Infraspecific
-                match.higher.level <- TRUE
+                match.higher.level <- ifelse(nrow(table.sp) > 0, TRUE, FALSE)
               } else {
                 table.sp <- table.sp[table.sp$Infraspecific.epithet == infrasp, ]
               }
@@ -352,7 +352,7 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
                 table.sp$Taxonomic.status.in.TPL <- table.sp$Taxonomic.status.in.TPL
                 # warning(paste(sp_orig, "does not exist in TPL; the species level is included in the output."))
                 Plant.Name.Index.final <- FALSE
-                match.higher.level <- TRUE
+                match.higher.level <- ifelse(nrow(table.sp) > 0, TRUE, FALSE)
               }
             # }
           }# end condition 2.2.2.3.A/B
@@ -361,11 +361,19 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 
           # match author ----
           if (nchar(auth) > 0) {
-            auth_match <- sapply(table.sp$Authorship, adist, auth)
-            # match current author (part after potential ex or parentheses (around basionym author))
-            auth_current <- auth
-            auth_current <- ifelse(any(grepl("^ex\\.?$", spparts)), gsub(".+ ex (.*)", "\\1", auth), auth_current)
-            auth_current <- ifelse(grepl("\\(.+\\) (.*)", auth), gsub("\\(.+\\) (.*)", "\\1", auth), auth_current)
+            if (match.higher.level == TRUE && auth_sp != "") { # if higher/species level is assigned, use species level author for matching
+              auth_match <- sapply(table.sp$Authorship, adist, auth_sp)
+              # match current author (part after potential ex or parentheses (around basionym author))
+              auth_current <- auth_sp
+              auth_current <- ifelse(any(grepl("^ex\\.?$", spparts)), gsub(".+ ex (.*)", "\\1", auth_sp), auth_current)
+              auth_current <- ifelse(grepl("\\(.+\\) (.*)", auth), gsub("\\(.+\\) (.*)", "\\1", auth_sp), auth_current)
+            } else {
+              auth_match <- sapply(table.sp$Authorship, adist, auth)
+              # match current author (part after potential ex or parentheses (around basionym author))
+              auth_current <- auth
+              auth_current <- ifelse(any(grepl("^ex\\.?$", spparts)), gsub(".+ ex (.*)", "\\1", auth), auth_current)
+              auth_current <- ifelse(grepl("\\(.+\\) (.*)", auth), gsub("\\(.+\\) (.*)", "\\1", auth), auth_current)
+            }
             auth_current_match <- sapply(table.sp$Authorship, adist, auth_current)
             if (!any(auth_current_match == 0) && any(grepl("\\(.+\\)", table.sp$Authorship))) { # match part after potential parentheses in TPL author
               auth_current_match <- sapply(gsub("\\(.+\\) (.*)", "\\1", table.sp$Authorship), adist, auth_current)
@@ -374,7 +382,7 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
               auth_current_match <- sapply(gsub(".* ex (.*)", "\\1", table.sp$Authorship), adist, auth_current)
             }
             if (length(auth_match) > 0) {
-              bestmatch <- min(as.numeric(auth_match), na.rm = TRUE)
+              bestmatch <- min(as.numeric(auth_match), na.rm = TRUE) # NA occurs for errors in TPL such as "Alchemilla vulgaris S.E.Frhner"
               bestmatch <- which(auth_match == bestmatch)
               bestmatch_auth_current <- min(as.numeric(auth_current_match), na.rm = TRUE)
               bestmatch_auth_current <- which(auth_current_match == bestmatch_auth_current)
@@ -383,7 +391,7 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
                 bestmatch <- bestmatch_auth_current
               }
               if (length(unique(names(bestmatch))) > 1) {
-                if (! (match.higher.level == TRUE && Plant.Name.Index.final == FALSE)) {
+                if (! (match.higher.level == TRUE && (!is.na(Plant.Name.Index.final) && Plant.Name.Index.final == FALSE))) {
                   warning(paste(sp_orig, ": has multiple synonyms with equally matching author names; the first author will be selected."))
                 }
                 bestmatch <- bestmatch[1]
@@ -409,14 +417,14 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
           } else {
             # filter input author ----
             if (nchar(auth) > 0) {
-              if (gsub("\\s+", "", chartr(".", " ", names(bestmatch))) != gsub("\\s+", "", chartr(".", " ", gsub(" et ", " &", auth))) &&
+              if (gsub("\\s+", "", chartr(".", " ", names(bestmatch))) != gsub("\\s+", "", chartr(".", " ", gsub(" et ", " &", gsub(" and ", " &", auth)))) &&
                   !((nchar(infrasp) > 0 && nchar(auth_sp) == 0 && auth_infra == FALSE) || (nchar(infrasp) > 0 && nchar(auth_sp) > 0 && infra == FALSE)) && match.higher.level == FALSE) {
                 warning(paste0(sp_orig, ": The input author, '", auth, "', does not exactly match the author of the selected taxon, '", table.sp$Authorship[bestmatch], "'."))
               }
-              if ((gsub("\\s+", "", chartr(".", " ", names(bestmatch))) != gsub("\\s+", "", chartr(".", " ", gsub(" et ", " &", auth))) && auth_infra == FALSE) && match.higher.level == TRUE) {
+              if ((gsub("\\s+", "", chartr(".", " ", names(bestmatch))) != gsub("\\s+", "", chartr(".", " ", gsub(" et ", " &", gsub(" and ", " &", auth)))) && auth_infra == FALSE) && match.higher.level == TRUE) {
                 warning(paste0(sp_orig, ": The input author, '", auth, "', does not exactly match the author of the selected taxon, '", table.sp$Authorship[bestmatch], "'."))
               }
-              if ((gsub("\\s+", "", chartr(".", " ", names(bestmatch))) != gsub("\\s+", "", chartr(".", " ", gsub(" et ", " &", auth_sp))) && auth_infra == TRUE && nchar(auth_sp) > 0) && match.higher.level == TRUE) {
+              if ((gsub("\\s+", "", chartr(".", " ", names(bestmatch))) != gsub("\\s+", "", chartr(".", " ", gsub(" et ", " &", gsub(" and ", " &", auth_sp)))) && auth_infra == TRUE && nchar(auth_sp) > 0) && match.higher.level == TRUE) {
                 warning(paste0(sp_orig, ": The input author, '", auth_sp, "', does not exactly match the author of the selected taxon, '", table.sp$Authorship[bestmatch], "'."))
               }
               if ((nchar(infrasp) > 0 && auth_infra == TRUE) || (nchar(infrasp) == 0 && auth_infra == FALSE)) {
@@ -573,10 +581,11 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
         } else if (z == 1) { # end condition 2.2.2
           if (nchar(infrasp) > 0 && table.sp$Infraspecific.epithet == "") {
             # warning(paste(sp_orig, "does not exist in TPL; the species level is included in the output"))
+            nominal.infra <- ifelse(species == Infraspecific, TRUE, FALSE)
             match.higher.level <- TRUE
-            Plant.Name.Index.final <- FALSE
+            Plant.Name.Index.final <- ifelse(nominal.infra == TRUE, TRUE, FALSE)
             if (nchar(auth) > 0 ) {
-              if (gsub("\\s+", "", chartr(".", " ", table.sp$Authorship)) != gsub("\\s+", "", chartr(".", " ", gsub(" et ", " &", auth_sp)))) {
+              if (gsub("\\s+", "", chartr(".", " ", table.sp$Authorship)) != gsub("\\s+", "", chartr(".", " ", gsub(" et ", " &", gsub(" and ", " &", auth_sp))))) {
                 warning(paste0(sp_orig, ": The input author, '", auth_sp, "', does not exactly match the author of the selected taxon, '", table.sp$Authorship, "'."))
               }
             }
@@ -588,8 +597,8 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
               marker <- TRUE
             }
           }
-          if (nchar(auth) > 0 && !(nchar(infrasp) > 0 && table.sp$Infraspecific.epithet == "") && (species != table.sp$Species && corr == TRUE && length(cck) > 0)) {
-            if (gsub("\\s+", "", chartr(".", " ", table.sp$Authorship)) != gsub("\\s+", "", chartr(".", " ", gsub(" et ", " &", auth)))) {
+          if (nchar(auth) > 0 && !(nchar(infrasp) > 0 && table.sp$Infraspecific.epithet == "") && ((species != table.sp$Species && corr == TRUE && length(cck) > 0) || (species == table.sp$Species))) {
+            if (gsub("\\s+", "", chartr(".", " ", table.sp$Authorship)) != gsub("\\s+", "", chartr(".", " ", gsub(" et ", " &", gsub(" and ", " &", auth))))) {
               warning(paste0(sp_orig, ": The input author, '", auth, "', does not exactly match the author of the selected taxon, '", table.sp$Authorship, "'."))
             }
           }
