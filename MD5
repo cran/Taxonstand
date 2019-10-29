@@ -1,9 +1,10 @@
-9bb12ff5b2bf85041bd225a50c3bebaf *DESCRIPTION
+f37d83aa02f27a991c60f0ecf7dab9ef *DESCRIPTION
 2ac41c7fb2c409b8d68e1e0458e99c46 *NAMESPACE
-b34c0e9f16569a41d617d344c056a341 *R/TPL.R
-a7cd038b916417b716d143af2ddd4fb9 *R/TPLck.R
+3040ec9c37eb869b87ac2d5cefde9bdc *R/TPL.R
+19527ff084d50e98ee79b731dd1d2a03 *R/TPLck.R
+f01e9831bf4997c132f67f0c0ac3d3ac *R/sysdata.rda
 c46d32ac6eb0a86b6f4d60ab9aba6669 *data/bryophytes.rda
-bda4fa244ec51741cb26f61015109587 *inst/NEWS.Rd
+69a3697fd4c063c2012f89ffabb40398 *inst/NEWS.Rd
 910e4a5d512bdc3036cd45d17b6424bf *man/TPL.Rd
-5b1ff8d9d8eaacffd7d3c4e47a8a526f *man/TPLck.Rd
-5091bc0df3b79ac84879e5f9043f9457 *man/bryophytes.Rd
+50d15adea889c579e877f2b485318a27 *man/TPLck.Rd
+3eebfe34e80f23a869c6757928a78435 *man/bryophytes.Rd

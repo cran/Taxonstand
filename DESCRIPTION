@@ -1,15 +1,15 @@
 Package: Taxonstand
 Type: Package
 Title: Taxonomic Standardization of Plant Species Names
-Version: 2.1
-Date: 2017-11-02
-Author: Luis Cayuela, Anke Stein, Jari Oksanen
+Version: 2.2
+Date: 2019-10-28
+Author: Luis Cayuela, Ildefonso Macarro, Anke Stein, Jari Oksanen
 Maintainer: Luis Cayuela <luis.cayuela@urjc.es>
-Depends: pbapply (>= 1.3-2)
+Depends: R (>= 2.10), pbapply (>= 1.3-2)
 Description: Automated standardization of taxonomic names and removal of orthographic errors in plant species names using 'The Plant List' website (www.theplantlist.org).
 License: GPL (>= 2)
 LazyLoad: yes
 NeedsCompilation: no
-Packaged: 2017-11-02 16:58:05 UTC; luis
+Packaged: 2019-10-28 14:24:16 UTC; luis
 Repository: CRAN
-Date/Publication: 2017-11-02 17:10:42 UTC
+Date/Publication: 2019-10-29 10:30:02 UTC

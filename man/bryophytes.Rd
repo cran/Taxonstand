@@ -5,7 +5,7 @@
 List of bryophytes
 }
 \description{
-\code{bryophytes} contain species names for 100 Mediterranean bryophytes
+\code{bryophytes} contains species names for 100 Mediterranean bryophytes
 }
 \usage{data(bryophytes)}
 \format{

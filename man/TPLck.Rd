@@ -1,5 +1,6 @@
 \name{TPLck}
 \alias{TPLck}
+\alias{lista}
 \title{
 Standardize a plant name according to The Plant List.
 }
