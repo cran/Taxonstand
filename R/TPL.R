@@ -56,10 +56,12 @@ function(splist, genus = NULL, species = NULL, infrasp = NULL, infra = TRUE, cor
       # a <- NULL
 
       a <- data.frame(Taxon = d, Genus = NA, Hybrid.marker = NA, Species = NA, Abbrev = NA, Infraspecific.rank = NA, Infraspecific = NA,
+
                       Authority = NA, ID = NA, Plant.Name.Index = NA, TPL.version = NA, Taxonomic.status = NA,
+
                       Family = NA, New.Genus = NA, New.Hybrid.marker = NA, New.Species = NA, New.Infraspecific.rank = NA, New.Infraspecific = NA,
-                      New.Authority = NA, New.ID = NA, New.Taxonomic.status = NA, Typo = NA, WFormat = NA, Higher.level = NA, Date = NA, Tax_res = NA, 
-                      stringsAsFactors = FALSE)
+
+                      New.Authority = NA, New.ID = NA, New.Taxonomic.status = NA, Typo = NA, WFormat = NA, Higher.level = NA, Date = NA, stringsAsFactors = FALSE)
 
     }
 

@@ -1,7 +1,7 @@
 \name{TPL}
 \alias{TPL}
 \title{
-Standardize plant names according to The Plant List.
+Standardize a list of plant names according to The Plant List.
 }
 \description{
 Connects to The Plant List (TPL) website and validates the names of a vector of

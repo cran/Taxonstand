@@ -262,8 +262,8 @@ Luis Cayuela, Anke Stein & Jari Oksanen
 (TPLck("Heliopsis helianthoides subsp. scabra"))
 
 # Drop variety and keep subspecies
-(TPLck("Vicia sativa L. subsp. nigra (L.) Ehrh. var. minor (Bertol.) Gaudin",
-drop.lower.level = TRUE))
+(TPLck("Vicia sativa L. subsp. nigra (L.) Ehrh. var. minor (Bertol.)
+Gaudin", drop.lower.level = TRUE))
 
 # Drop nominal subspecies and keep variety
 (TPLck("Anagallis arvensis subsp. arvensis var. caerulea", 

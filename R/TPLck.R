@@ -206,7 +206,6 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 	marker <- FALSE
 	marker.infra <- FALSE
 	Plant.Name.Index.final <- NA
-	tax_res <- "Genus" # si esta en lista, su valor pasa a valer Genus
 
 	# condition 0 ----
 	Genus_2<-""
@@ -231,7 +230,7 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 		letra2<-tolower(substr(genero,2,2))
 		genero<-paste(toupper(substr(genero,1,1)),tolower(substr(genero,2,nchar(genero))),sep="")
 		resultado<-row(letra1,0,genero,lista)
-
+		
 		if(resultado[1]==""&&sum(adist(genero ,trimws(lista[,letra1]))<=1)>1||sum(adist(genero ,trimws(lista[,letra2]))<=1)>1)
 		{
 			warning("More results in ",paste(Genus))
@@ -248,14 +247,14 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 			resultado<-row(letra2,1,genero,lista)
 			clank<-TRUE
 		}
-		if(resultado[1]!=""&&!is.na(species))
+		if(resultado[1]!=""&&exists(species))
 		{
 			genus<-trimws(resultado)
-			Genus_2 <- Genus
+			Genus_2<-Genus
 			searchstring <- paste("http://www.theplantlist.org/tpl", vv, "/search?q=", genus, "+", species, "&csv=true", sep = "")
 			table.sp<-try(read.csv(searchstring,header=TRUE,sep=",",fill=TRUE,colClasses="character",as.is=TRUE,encoding=encoding),silent=TRUE)
-			}
-		if(resultado[1]!=""&&is.na(species))
+		}
+		if(resultado[1]!=""&&!exists(species))
 		{
 			warning("No epithet")
 			OnlyGenus<-TRUE
@@ -273,10 +272,10 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 			#ID <- ""
 			#New.ID <- ""
 		}
-		if(resultado[1]!="") {
-			warning(genus," genus doesn't exist")
-		}
+		if(resultado[1]=="")
+			warning(genus,"genus doesn't exist")
 	}
+
 
 	# condition 1 ----
 	if (is.null(table.sp)) 
@@ -294,7 +293,6 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 		WFormat <- TRUE
 		ID <- ""
 		New.ID <- ""
-		tax_res <- NA
 	}
 	# condition 2 ----
 	else if (!is.null(table.sp)) 
@@ -317,7 +315,6 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 			WFormat <- FALSE
 			ID <- ""
 			New.ID <- ""
-			tax_res <- NA
 		# condition 2.2 ----
 		}
 		else if (k > 1) 
@@ -338,7 +335,6 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 				WFormat <- FALSE
 				ID <- ""
 				New.ID <- ""
-				tax_res <- NA
 			}
 			# condition 2.2.2 (z > 1) ----
 			else if (z > 1) 
@@ -456,7 +452,6 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 					WFormat <- FALSE
 					ID <- ""
 					New.ID <- ""
-					#tax_res <- NA
 				} # end condition 2.2.2.2
 	
 				# condition 2.2.2.3 (single spec; fuzzy match infraspec) ----
@@ -464,7 +459,7 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 				{
 					grep1 <- grep(infrasp, table.sp$Infraspecific.epithet, value = TRUE, fixed = TRUE)
 					ngrep <- nchar(grep1)
-					if ((length(ngrep) == 0 || (ngrep - nchar(infrasp)) != 0) && corr == TRUE && !is.na(infrasp) && nchar(infrasp) > 0) 
+					if ((length(ngrep) == 0 || abs(ngrep - nchar(infrasp)) != 0) && corr == TRUE && !is.na(infrasp) && nchar(infrasp) > 0) 
 					{
 						cck.infra <- agrep(infrasp, table.sp$Infraspecific.epithet, value = TRUE, max.distance = max.distance)
 						ddf.infra <- abs(nchar(cck.infra) - nchar(infrasp))
@@ -477,8 +472,10 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 						if (length(cck.infra) > 0 && levs == 1) 
 						{
 							infrasp <- unique(cck.infra)
+							grep1 <- grep(infrasp, table.sp$Infraspecific.epithet, value = TRUE, fixed = TRUE)
+							ngrep <- nchar(grep1)
 							marker.infra <- TRUE
-						}
+							}
 					}
 					# condition 2.2.2.3.A (filter infraspecific epithet) ----
 					nominal.infra <- any(species == Infraspecific)
@@ -598,7 +595,6 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 						WFormat <- FALSE
 						ID <- ""
 						New.ID <- ""
-						#tax_res <- NA
 						# condition z > 0 ----
 					} 
 					else 
@@ -699,6 +695,7 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 							ID <- table.sp.id
 							# extract target taxon ----
 							at <- try(readLines(paste("http://www.theplantlist.org/tpl", vv, "/record/", table.sp.id, sep = ""), encoding = encoding))
+							at <- sapply(at, trimws, USE.NAMES = FALSE)
 							if (class(at) == "try-error") 
 							{
 								stop("Cannot read TPL website.")
@@ -726,6 +723,7 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 								}
 							}
 							n <- pmatch(az, at)
+							at[n] <- paste(at[n], at[n+1], at[n+2])
 							nsen <- at[n]
 							nsen <- unlist(strsplit(unlist(strsplit(nsen, split = ">")), "<"))
 							gen_index <- grep('class="genus"', nsen) + 1
@@ -734,22 +732,22 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 							{
 								if (version == "1.1") 
 								{
-									tpl_id <- gsub('<p>This name is a <a href="/1.1/about/#synonym">synonym</a> of <a href="(.+)"><span class="name">.+', "\\1", at[n])
+									tpl_id <- gsub('<p>This name is a <a href="/1.1/about/#synonym">synonym</a> of <a href="(.+)"> ?<span class="name">.+', "\\1", at[n])
 								} 
 								else if (version == "1.0") 
 								{
-									tpl_id <- gsub('<p>This name is a <a href="/about/#synonym">synonym</a> of <a href="(.+)"><i class="genus">.+', "\\1", at[n])
+									tpl_id <- gsub('<p>This name is a <a href="/about/#synonym">synonym</a> of <a href="(.+)"> ?<i class="genus">.+', "\\1", at[n])
 								}
 							}
 							if (grepl("erroneously used", at[n])) 
 							{
 								if (version == "1.1") 
 								{
-									tpl_id <- gsub('<p>In the past this name has been <a href="/1.1/about/#misapplied">erroneously used</a> to refer to <a href="(.+)"><span class="name">.+', "\\1", at[n])
+									tpl_id <- gsub('<p>In the past this name has been <a href="/1.1/about/#misapplied">erroneously used</a> to refer to <a href="(.+)"> ?<span class="name">.+', "\\1", at[n])
 								} 
 								else if (version == "1.0") 
 								{
-									tpl_id <- gsub('<p>In the past this name has been <a href="/about/#misapplied">erroneously used</a> to refer to <a href="(.+)"><i class="genus">.+', "\\1", at[n])
+									tpl_id <- gsub('<p>In the past this name has been <a href="/about/#misapplied">erroneously used</a> to refer to <a href="(.+)"> ?<i class="genus">.+', "\\1", at[n])
 								}
 							}
 							if (version == "1.1") 
@@ -871,7 +869,6 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 					WFormat <- FALSE
 					ID <- ""
 					New.ID <- ""
-					#tax_res <- NA
 					# condition 2.2.3.2 (synonym or misapplied) ----
 				}
 				else if (table.sp$Taxonomic.status.in.TPL == "Synonym" || table.sp$Taxonomic.status.in.TPL == "Misapplied") 
@@ -879,6 +876,7 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 					table.sp.id <- table.sp[1, 1]
 					ID <- table.sp.id
 					at <- try(readLines(paste("http://www.theplantlist.org/tpl", vv, "/record/", table.sp.id, sep = ""), encoding = encoding))
+					at <- sapply(at, trimws, USE.NAMES = FALSE)
 					if (class(at) == "try-error") 
 					{
 						stop("Cannot read TPL website.")
@@ -906,6 +904,7 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 						}
 					}
 					n <- pmatch(az, at)
+					at[n] <- paste(at[n], at[n+1], at[n+2])
 					nsen <- at[n]
 					nsen <- unlist(strsplit(unlist(strsplit(nsen, split = ">")), "<"))
 					gen_index <- grep('class="genus"', nsen) + 1
@@ -914,22 +913,22 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 					{
 						if (version == "1.1") 
 						{
-							tpl_id <- gsub('<p>This name is a <a href="/1.1/about/#synonym">synonym</a> of <a href="(.+)"><span class="name">.+', "\\1", at[n])
+							tpl_id <- gsub('<p>This name is a <a href="/1.1/about/#synonym">synonym</a> of <a href="(.+)"> ?<span class="name">.+', "\\1", at[n])
 						} 
 						else if (version == "1.0") 
 						{
-							tpl_id <- gsub('<p>This name is a <a href="/about/#synonym">synonym</a> of <a href="(.+)"><i class="genus">.+', "\\1", at[n])
+							tpl_id <- gsub('<p>This name is a <a href="/about/#synonym">synonym</a> of <a href="(.+)"> ?<i class="genus">.+', "\\1", at[n])
 						}
 					}
 					if (grepl("erroneously used", at[n])) 
 					{
 						if (version == "1.1") 
 						{
-							tpl_id <- gsub('<p>In the past this name has been <a href="/1.1/about/#misapplied">erroneously used</a> to refer to <a href="(.+)"><span class="name">.+', "\\1", at[n])
+							tpl_id <- gsub('<p>In the past this name has been <a href="/1.1/about/#misapplied">erroneously used</a> to refer to <a href="(.+)"> ?<span class="name">.+', "\\1", at[n])
 						} 
 						else if (version == "1.0") 
 						{
-							tpl_id <- gsub('<p>In the past this name has been <a href="/about/#misapplied">erroneously used</a> to refer to <a href="(.+)"><i class="genus">.+', "\\1", at[n])
+							tpl_id <- gsub('<p>In the past this name has been <a href="/about/#misapplied">erroneously used</a> to refer to <a href="(.+)"> ?<i class="genus">.+', "\\1", at[n])
 						}
 					}
 					if (version == "1.1") 
@@ -1008,10 +1007,11 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 		Typo<-TRUE
 		Genus<-Genus_2
 	}
-	if(Plant.Name.Index==TRUE) #si Plant.Name.Index==TRUE, entonces tax_res = Species
-		tax_res <- "Species"
+	if(OnlyGenus)
+		Plant.Name.Index<-TRUE
 
 	Hybrid.marker <- ifelse(hybrid == TRUE, intToUtf8(215), "")
 	Plant.Name.Index <- ifelse(!is.na(Plant.Name.Index.final), Plant.Name.Index.final, Plant.Name.Index)
-	results <- data.frame(Taxon = sp_orig, Genus, Hybrid.marker, Species, Abbrev = as.character(Abbrev), Infraspecific.rank = as.character(Rank), Infraspecific, Authority = auth, ID, Plant.Name.Index, TPL.version = version, Taxonomic.status, Family, New.Genus, New.Hybrid.marker, New.Species, New.Infraspecific.rank, New.Infraspecific, New.Authority, New.ID, New.Taxonomic.status, Typo, WFormat, Higher.level = match.higher.level, Date = Sys.Date(), stringsAsFactors = FALSE, Tax_res=tax_res)
+	results <- data.frame(Taxon = sp_orig, Genus, Hybrid.marker, Species, Abbrev = as.character(Abbrev), Infraspecific.rank = as.character(Rank), Infraspecific,
+	Authority = auth, ID, Plant.Name.Index, TPL.version = version, Taxonomic.status, Family, New.Genus, New.Hybrid.marker, New.Species, New.Infraspecific.rank, New.Infraspecific, New.Authority, New.ID, New.Taxonomic.status, Typo, WFormat, Higher.level = match.higher.level, Date = Sys.Date(), stringsAsFactors = FALSE)
 }
