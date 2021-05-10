@@ -247,14 +247,14 @@ function(sp, infra = TRUE, corr = TRUE, diffchar = 2, max.distance = 1, version 
 			resultado<-row(letra2,1,genero,lista)
 			clank<-TRUE
 		}
-		if(resultado[1]!=""&&exists(species))
+		if(resultado[1]!=""&&!is.na(species))
 		{
 			genus<-trimws(resultado)
 			Genus_2<-Genus
 			searchstring <- paste("http://www.theplantlist.org/tpl", vv, "/search?q=", genus, "+", species, "&csv=true", sep = "")
 			table.sp<-try(read.csv(searchstring,header=TRUE,sep=",",fill=TRUE,colClasses="character",as.is=TRUE,encoding=encoding),silent=TRUE)
 		}
-		if(resultado[1]!=""&&!exists(species))
+		if(resultado[1]!=""&&is.na(species))
 		{
 			warning("No epithet")
 			OnlyGenus<-TRUE
